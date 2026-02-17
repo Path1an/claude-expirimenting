@@ -1,0 +1,137 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #1a1a2e;
+  color: #eee;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+h1 {
+  margin-bottom: 1.5rem;
+  font-size: 2rem;
+  color: #e94560;
+}
+
+.board {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.player {
+  background: #16213e;
+  border: 3px solid #0f3460;
+  border-radius: 12px;
+  padding: 1.5rem 2rem;
+  width: 220px;
+  text-align: center;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.player.active {
+  border-color: #e94560;
+  box-shadow: 0 0 20px rgba(233, 69, 96, 0.3);
+}
+
+.player h2 {
+  font-size: 1.2rem;
+  margin-bottom: 0.8rem;
+}
+
+.score {
+  font-size: 3rem;
+  font-weight: bold;
+  color: #e94560;
+}
+
+.turn-score {
+  margin-top: 0.8rem;
+  font-size: 0.95rem;
+  color: #aaa;
+}
+
+.turn-score span {
+  color: #53d8fb;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.dice {
+  font-size: 5rem;
+  margin: 1rem 0;
+  min-height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+.dice.rolling {
+  animation: shake 0.3s infinite;
+}
+
+@keyframes shake {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-12deg); }
+  75% { transform: rotate(12deg); }
+}
+
+.controls {
+  display: flex;
+  gap: 1rem;
+}
+
+.controls button {
+  padding: 0.8rem 2rem;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: transform 0.1s, opacity 0.2s;
+}
+
+.controls button:hover {
+  transform: scale(1.05);
+}
+
+.controls button:disabled {
+  opacity: 0.4;
+  cursor: default;
+  transform: none;
+}
+
+#roll-btn {
+  background: #e94560;
+  color: #fff;
+}
+
+#hold-btn {
+  background: #53d8fb;
+  color: #1a1a2e;
+}
+
+#new-btn {
+  background: #0f3460;
+  color: #eee;
+}
+
+.message {
+  margin-top: 1rem;
+  font-size: 1.2rem;
+  min-height: 1.5rem;
+  color: #ffd369;
+}
+
+.player.winner .score {
+  color: #53d8fb;
+}

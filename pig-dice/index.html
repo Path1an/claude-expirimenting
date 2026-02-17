@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pig Dice Game</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Pig Dice</h1>
+
+  <div class="board">
+    <div class="player active" id="p0">
+      <h2>Player 1</h2>
+      <div class="score" id="score0">0</div>
+      <div class="turn-score">Current: <span id="turn0">0</span></div>
+    </div>
+    <div class="player" id="p1">
+      <h2>Player 2</h2>
+      <div class="score" id="score1">0</div>
+      <div class="turn-score">Current: <span id="turn1">0</span></div>
+    </div>
+  </div>
+
+  <div class="dice" id="dice">🎲</div>
+
+  <div class="controls">
+    <button id="roll-btn">Roll</button>
+    <button id="hold-btn">Hold</button>
+    <button id="new-btn">New Game</button>
+  </div>
+
+  <div class="message" id="msg"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
