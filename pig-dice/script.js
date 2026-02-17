@@ -26,9 +26,63 @@ function dieSVG(n) {
 }
 
 let scores, turnScore, activePlayer, gameOver, numPlayers = 2, gameGen = 0;
+let playerNames = [];
 const botPlayers = new Set();
 
 const $ = (id) => document.getElementById(id);
+
+// --- Particle Background ---
+
+function createParticles() {
+  const canvas = document.createElement('canvas');
+  canvas.id = 'particle-canvas';
+  canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;';
+  document.body.prepend(canvas);
+  const ctx = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const particles = Array.from({ length: 40 }, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    r: Math.random() * 2 + 1,
+    vx: (Math.random() - 0.5) * 0.3,
+    vy: (Math.random() - 0.5) * 0.3,
+    alpha: Math.random() * 0.3 + 0.1
+  }));
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (const p of particles) {
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < 0) p.x = canvas.width;
+      if (p.x > canvas.width) p.x = 0;
+      if (p.y < 0) p.y = canvas.height;
+      if (p.y > canvas.height) p.y = 0;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(83, 216, 251, ${p.alpha})`;
+      ctx.fill();
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// --- Micro-Animations ---
+
+function pulseElement(el) {
+  el.style.transform = 'scale(1.2)';
+  setTimeout(() => { el.style.transform = 'scale(1)'; }, 150);
+}
+
+// --- Confetti ---
 
 function launchConfetti() {
   const canvas = document.createElement('canvas');
@@ -83,6 +137,65 @@ function launchConfetti() {
   draw();
 }
 
+// --- Stats (localStorage) ---
+
+function loadStats() {
+  try {
+    return JSON.parse(localStorage.getItem('pigDiceStats')) || {};
+  } catch { return {}; }
+}
+
+function saveStats(stats) {
+  localStorage.setItem('pigDiceStats', JSON.stringify(stats));
+}
+
+function recordWin(winnerName) {
+  const stats = loadStats();
+  for (const key of Object.keys(stats)) {
+    if (stats[key].lastWin) {
+      stats[key].streak = 0;
+    }
+    stats[key].lastWin = false;
+  }
+  if (!stats[winnerName]) {
+    stats[winnerName] = { wins: 0, streak: 0, lastWin: false };
+  }
+  stats[winnerName].wins++;
+  stats[winnerName].streak++;
+  stats[winnerName].lastWin = true;
+  saveStats(stats);
+}
+
+function clearStats() {
+  localStorage.removeItem('pigDiceStats');
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function renderStats() {
+  const stats = loadStats();
+  const body = $('stats-body');
+  const entries = Object.entries(stats).sort((a, b) => b[1].wins - a[1].wins);
+
+  if (entries.length === 0) {
+    body.innerHTML = '<p class="no-stats">No games played yet.</p>';
+    return;
+  }
+
+  body.innerHTML = `<table>
+    <thead><tr><th>Player</th><th>Wins</th><th>Streak</th></tr></thead>
+    <tbody>${entries.map(([name, s]) =>
+      `<tr><td>${escapeHtml(name)}</td><td>${s.wins}</td><td>${s.streak}</td></tr>`
+    ).join('')}</tbody>
+  </table>`;
+}
+
+// --- Bot Logic ---
+
 function isBot(playerIndex) {
   return botPlayers.has(playerIndex);
 }
@@ -100,12 +213,53 @@ function buildBotSelect() {
       } else {
         botPlayers.add(i);
       }
+      // Update name if it was still a default
+      const defaultHuman = `Player ${i + 1}`;
+      const defaultBot = `Bot ${i + 1}`;
+      if (playerNames[i] === defaultHuman || playerNames[i] === defaultBot) {
+        playerNames[i] = botPlayers.has(i) ? defaultBot : defaultHuman;
+      }
       buildBotSelect();
       init();
     });
     container.appendChild(btn);
   }
 }
+
+// --- Custom Player Names ---
+
+function startNameEdit(h2) {
+  const idx = parseInt(h2.dataset.index);
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.value = playerNames[idx];
+  input.maxLength = 12;
+  input.className = 'name-input';
+  input.style.cssText = 'width:80%;font-size:1.1rem;text-align:center;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:6px;color:#eee;padding:0.2rem;outline:none;font-family:inherit;';
+
+  h2.replaceWith(input);
+  input.focus();
+  input.select();
+
+  function commit() {
+    const val = input.value.trim() || (isBot(idx) ? `Bot ${idx + 1}` : `Player ${idx + 1}`);
+    playerNames[idx] = val;
+    const newH2 = document.createElement('h2');
+    newH2.className = 'player-name';
+    newH2.dataset.index = idx;
+    newH2.textContent = val;
+    newH2.addEventListener('click', () => startNameEdit(newH2));
+    input.replaceWith(newH2);
+  }
+
+  input.addEventListener('blur', commit);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') input.blur();
+    if (e.key === 'Escape') { input.value = playerNames[idx]; input.blur(); }
+  });
+}
+
+// --- Board ---
 
 function buildBoard(count) {
   const board = $('board');
@@ -114,15 +268,20 @@ function buildBoard(count) {
     const div = document.createElement('div');
     div.className = 'player' + (isBot(i) ? ' bot' : '');
     div.id = `p${i}`;
-    const label = isBot(i) ? `Bot ${i + 1}` : `Player ${i + 1}`;
     div.innerHTML = `
-      <h2>${label}</h2>
+      <h2 class="player-name" data-index="${i}">${escapeHtml(playerNames[i])}</h2>
       <div class="score" id="score${i}">0</div>
       <div class="turn-score">Current: <span id="turn${i}">0</span></div>
     `;
     board.appendChild(div);
   }
+  // Attach name edit listeners
+  document.querySelectorAll('.player-name').forEach(h2 => {
+    h2.addEventListener('click', () => startNameEdit(h2));
+  });
 }
+
+// --- Game Init ---
 
 function init() {
   gameGen++;
@@ -130,6 +289,13 @@ function init() {
   turnScore = 0;
   activePlayer = 0;
   gameOver = false;
+
+  // Populate default names if needed
+  if (playerNames.length !== numPlayers) {
+    playerNames = Array.from({ length: numPlayers }, (_, i) =>
+      isBot(i) ? `Bot ${i + 1}` : `Player ${i + 1}`
+    );
+  }
 
   buildBoard(numPlayers);
   buildBotSelect();
@@ -149,6 +315,8 @@ function init() {
     $('hold-btn').disabled = false;
   }
 }
+
+// --- Turn Management ---
 
 function switchPlayer() {
   $(`turn${activePlayer}`).textContent = '0';
@@ -175,22 +343,22 @@ function botTurn() {
   function botStep() {
     if (gameOver || gen !== gameGen || !isBot(activePlayer)) return;
 
-    // Bot decides whether to hold — unpredictable and aggressive
     const gap = WINNING_SCORE - scores[activePlayer];
     const canWin = turnScore >= gap;
-    // Base threshold varies 15-28 each turn, plus pushes harder when behind
     const bestOpponent = Math.max(...scores.filter((_, i) => i !== activePlayer));
     const threshold = canWin ? 0 : Math.floor(Math.random() * 14) + 15 + Math.max(0, (bestOpponent - scores[activePlayer]) / 4);
     if (turnScore >= threshold || canWin) {
       scores[activePlayer] += turnScore;
       $(`score${activePlayer}`).textContent = scores[activePlayer];
+      pulseElement($(`score${activePlayer}`));
       $(`turn${activePlayer}`).textContent = '0';
 
       if (scores[activePlayer] >= WINNING_SCORE) {
         gameOver = true;
-        $('msg').textContent = `Bot ${activePlayer + 1} wins!`;
+        $('msg').textContent = `${playerNames[activePlayer]} wins!`;
         $('msg').classList.add('win-msg');
         $(`p${activePlayer}`).classList.add('winner');
+        recordWin(playerNames[activePlayer]);
         launchConfetti();
         return;
       }
@@ -199,7 +367,6 @@ function botTurn() {
       return;
     }
 
-    // Bot rolls
     $('dice').classList.add('rolling');
     setTimeout(() => {
       if (gen !== gameGen || !isBot(activePlayer)) return;
@@ -208,20 +375,23 @@ function botTurn() {
       $('dice').classList.remove('rolling');
 
       if (die === 1) {
-        $('msg').textContent = `Bot ${activePlayer + 1} rolled a 1! Lost their turn.`;
+        $('msg').textContent = `${playerNames[activePlayer]} rolled a 1! Lost their turn.`;
         switchPlayer();
       } else {
         turnScore += die;
         $(`turn${activePlayer}`).textContent = turnScore;
-        $('msg').textContent = `Bot ${activePlayer + 1} rolled a ${die}...`;
+        pulseElement($(`turn${activePlayer}`));
+        $('msg').textContent = `${playerNames[activePlayer]} rolled a ${die}...`;
         setTimeout(botStep, 800);
       }
     }, 350);
   }
 
-  $('msg').textContent = `Bot ${activePlayer + 1} is thinking...`;
+  $('msg').textContent = `${playerNames[activePlayer]} is thinking...`;
   setTimeout(botStep, 800);
 }
+
+// --- Human Actions ---
 
 function roll() {
   if (gameOver || isBot(activePlayer)) return;
@@ -236,11 +406,12 @@ function roll() {
     $('dice').classList.remove('rolling');
 
     if (die === 1) {
-      $('msg').textContent = `Rolled a 1! Player ${activePlayer + 1} loses their turn.`;
+      $('msg').textContent = `Rolled a 1! ${playerNames[activePlayer]} loses their turn.`;
       switchPlayer();
     } else {
       turnScore += die;
       $(`turn${activePlayer}`).textContent = turnScore;
+      pulseElement($(`turn${activePlayer}`));
       $('msg').textContent = '';
       $('roll-btn').disabled = false;
       $('hold-btn').disabled = false;
@@ -253,21 +424,25 @@ function hold() {
 
   scores[activePlayer] += turnScore;
   $(`score${activePlayer}`).textContent = scores[activePlayer];
+  pulseElement($(`score${activePlayer}`));
   $(`turn${activePlayer}`).textContent = '0';
 
   if (scores[activePlayer] >= WINNING_SCORE) {
     gameOver = true;
-    $('msg').textContent = `Player ${activePlayer + 1} wins!`;
+    $('msg').textContent = `${playerNames[activePlayer]} wins!`;
     $('msg').classList.add('win-msg');
     $(`p${activePlayer}`).classList.add('winner');
     $('roll-btn').disabled = true;
     $('hold-btn').disabled = true;
+    recordWin(playerNames[activePlayer]);
     launchConfetti();
     return;
   }
 
   switchPlayer();
 }
+
+// --- Event Listeners ---
 
 $('roll-btn').addEventListener('click', roll);
 $('hold-btn').addEventListener('click', hold);
@@ -278,12 +453,36 @@ document.querySelectorAll('.ps-btn[data-players]').forEach(btn => {
     document.querySelectorAll('.ps-btn[data-players]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     numPlayers = parseInt(btn.dataset.players);
-    // Remove bots beyond new player count
     for (const id of [...botPlayers]) {
       if (id >= numPlayers) botPlayers.delete(id);
     }
+    playerNames = []; // Reset names on player count change
     init();
   });
 });
 
+// Stats modal
+$('stats-btn').addEventListener('click', () => {
+  renderStats();
+  $('stats-modal').classList.remove('hidden');
+});
+
+$('close-stats-btn').addEventListener('click', () => {
+  $('stats-modal').classList.add('hidden');
+});
+
+$('clear-stats-btn').addEventListener('click', () => {
+  clearStats();
+  renderStats();
+});
+
+$('stats-modal').addEventListener('click', (e) => {
+  if (e.target === $('stats-modal')) {
+    $('stats-modal').classList.add('hidden');
+  }
+});
+
+// --- Start ---
+
+createParticles();
 init();
