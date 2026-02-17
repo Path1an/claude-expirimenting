@@ -29,9 +29,39 @@ h1 {
   max-width: 400px;
 }
 
+.player-select {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.ps-btn {
+  padding: 0.5rem 1.2rem;
+  font-size: 0.95rem;
+  border: 2px solid #0f3460;
+  border-radius: 8px;
+  background: #16213e;
+  color: #aaa;
+  cursor: pointer;
+  font-weight: bold;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.ps-btn:hover {
+  border-color: #e94560;
+  color: #eee;
+}
+
+.ps-btn.active {
+  border-color: #e94560;
+  color: #e94560;
+}
+
 .board {
   display: flex;
-  gap: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
   margin-bottom: 1.5rem;
 }
 
@@ -39,8 +69,8 @@ h1 {
   background: #16213e;
   border: 3px solid #0f3460;
   border-radius: 12px;
-  padding: 1.5rem 2rem;
-  width: 220px;
+  padding: 1.5rem 1.5rem;
+  width: 190px;
   text-align: center;
   transition: border-color 0.3s, box-shadow 0.3s;
 }
