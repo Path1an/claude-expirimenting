@@ -57,14 +57,33 @@ h1 {
   color: #e94560;
 }
 
-#bot-toggle {
-  margin-left: 0.5rem;
-  border-color: #533d8e;
+.bot-select {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
 }
 
-#bot-toggle.active {
+.bot-btn {
+  padding: 0.4rem 1rem;
+  font-size: 0.85rem;
+  border: 2px solid #0f3460;
+  border-radius: 8px;
+  background: #16213e;
+  color: #aaa;
+  cursor: pointer;
+  font-weight: bold;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.bot-btn:hover {
+  border-color: #9b59b6;
+  color: #eee;
+}
+
+.bot-btn.is-bot {
   border-color: #9b59b6;
   color: #9b59b6;
+  background: #2a1a3e;
 }
 
 .player.bot h2 {

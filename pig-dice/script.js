@@ -25,7 +25,8 @@ function dieSVG(n) {
   </svg>`;
 }
 
-let scores, turnScore, activePlayer, gameOver, numPlayers = 2, vsBot = false;
+let scores, turnScore, activePlayer, gameOver, numPlayers = 2, gameGen = 0;
+const botPlayers = new Set();
 
 const $ = (id) => document.getElementById(id);
 
@@ -83,7 +84,27 @@ function launchConfetti() {
 }
 
 function isBot(playerIndex) {
-  return vsBot && playerIndex !== 0;
+  return botPlayers.has(playerIndex);
+}
+
+function buildBotSelect() {
+  const container = $('bot-select');
+  container.innerHTML = '';
+  for (let i = 0; i < numPlayers; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'bot-btn' + (botPlayers.has(i) ? ' is-bot' : '');
+    btn.textContent = botPlayers.has(i) ? `P${i + 1}: Bot` : `P${i + 1}: Human`;
+    btn.addEventListener('click', () => {
+      if (botPlayers.has(i)) {
+        botPlayers.delete(i);
+      } else {
+        botPlayers.add(i);
+      }
+      buildBotSelect();
+      init();
+    });
+    container.appendChild(btn);
+  }
 }
 
 function buildBoard(count) {
@@ -104,12 +125,14 @@ function buildBoard(count) {
 }
 
 function init() {
+  gameGen++;
   scores = new Array(numPlayers).fill(0);
   turnScore = 0;
   activePlayer = 0;
   gameOver = false;
 
   buildBoard(numPlayers);
+  buildBotSelect();
   $('p0').classList.add('active');
   $('dice').innerHTML = '🎲';
   $('dice').classList.remove('rolling');
@@ -117,8 +140,14 @@ function init() {
   $('msg').classList.remove('win-msg');
   const oldCanvas = document.querySelector('.confetti-canvas');
   if (oldCanvas) oldCanvas.remove();
-  $('roll-btn').disabled = false;
-  $('hold-btn').disabled = false;
+  if (isBot(0)) {
+    $('roll-btn').disabled = true;
+    $('hold-btn').disabled = true;
+    setTimeout(botTurn, 600);
+  } else {
+    $('roll-btn').disabled = false;
+    $('hold-btn').disabled = false;
+  }
 }
 
 function switchPlayer() {
@@ -138,18 +167,20 @@ function switchPlayer() {
 }
 
 function botTurn() {
-  if (gameOver) return;
+  if (gameOver || !isBot(activePlayer)) return;
+  const gen = gameGen;
   $('roll-btn').disabled = true;
   $('hold-btn').disabled = true;
 
   function botStep() {
-    if (gameOver) return;
+    if (gameOver || gen !== gameGen || !isBot(activePlayer)) return;
 
     // Bot decides whether to hold — unpredictable and aggressive
     const gap = WINNING_SCORE - scores[activePlayer];
     const canWin = turnScore >= gap;
     // Base threshold varies 15-28 each turn, plus pushes harder when behind
-    const threshold = canWin ? 0 : Math.floor(Math.random() * 14) + 15 + Math.max(0, (scores[0] - scores[activePlayer]) / 4);
+    const bestOpponent = Math.max(...scores.filter((_, i) => i !== activePlayer));
+    const threshold = canWin ? 0 : Math.floor(Math.random() * 14) + 15 + Math.max(0, (bestOpponent - scores[activePlayer]) / 4);
     if (turnScore >= threshold || canWin) {
       scores[activePlayer] += turnScore;
       $(`score${activePlayer}`).textContent = scores[activePlayer];
@@ -171,6 +202,7 @@ function botTurn() {
     // Bot rolls
     $('dice').classList.add('rolling');
     setTimeout(() => {
+      if (gen !== gameGen || !isBot(activePlayer)) return;
       const die = Math.floor(Math.random() * 6) + 1;
       $('dice').innerHTML = dieSVG(die);
       $('dice').classList.remove('rolling');
@@ -210,10 +242,9 @@ function roll() {
       turnScore += die;
       $(`turn${activePlayer}`).textContent = turnScore;
       $('msg').textContent = '';
+      $('roll-btn').disabled = false;
+      $('hold-btn').disabled = false;
     }
-
-    $('roll-btn').disabled = false;
-    $('hold-btn').disabled = false;
   }, 350);
 }
 
@@ -247,14 +278,12 @@ document.querySelectorAll('.ps-btn[data-players]').forEach(btn => {
     document.querySelectorAll('.ps-btn[data-players]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     numPlayers = parseInt(btn.dataset.players);
+    // Remove bots beyond new player count
+    for (const id of [...botPlayers]) {
+      if (id >= numPlayers) botPlayers.delete(id);
+    }
     init();
   });
-});
-
-$('bot-toggle').addEventListener('click', () => {
-  vsBot = !vsBot;
-  $('bot-toggle').classList.toggle('active', vsBot);
-  init();
 });
 
 init();
