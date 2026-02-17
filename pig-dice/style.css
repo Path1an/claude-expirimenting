@@ -57,6 +57,20 @@ h1 {
   color: #e94560;
 }
 
+#bot-toggle {
+  margin-left: 0.5rem;
+  border-color: #533d8e;
+}
+
+#bot-toggle.active {
+  border-color: #9b59b6;
+  color: #9b59b6;
+}
+
+.player.bot h2 {
+  color: #9b59b6;
+}
+
 .board {
   display: flex;
   flex-wrap: wrap;

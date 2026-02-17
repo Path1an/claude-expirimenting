@@ -25,7 +25,7 @@ function dieSVG(n) {
   </svg>`;
 }
 
-let scores, turnScore, activePlayer, gameOver, numPlayers = 2;
+let scores, turnScore, activePlayer, gameOver, numPlayers = 2, vsBot = false;
 
 const $ = (id) => document.getElementById(id);
 
@@ -82,15 +82,20 @@ function launchConfetti() {
   draw();
 }
 
+function isBot(playerIndex) {
+  return vsBot && playerIndex !== 0;
+}
+
 function buildBoard(count) {
   const board = $('board');
   board.innerHTML = '';
   for (let i = 0; i < count; i++) {
     const div = document.createElement('div');
-    div.className = 'player';
+    div.className = 'player' + (isBot(i) ? ' bot' : '');
     div.id = `p${i}`;
+    const label = isBot(i) ? `Bot ${i + 1}` : `Player ${i + 1}`;
     div.innerHTML = `
-      <h2>Player ${i + 1}</h2>
+      <h2>${label}</h2>
       <div class="score" id="score${i}">0</div>
       <div class="turn-score">Current: <span id="turn${i}">0</span></div>
     `;
@@ -122,10 +127,72 @@ function switchPlayer() {
   $(`p${activePlayer}`).classList.remove('active');
   activePlayer = (activePlayer + 1) % numPlayers;
   $(`p${activePlayer}`).classList.add('active');
+  if (isBot(activePlayer) && !gameOver) {
+    $('roll-btn').disabled = true;
+    $('hold-btn').disabled = true;
+    setTimeout(botTurn, 600);
+  } else {
+    $('roll-btn').disabled = false;
+    $('hold-btn').disabled = false;
+  }
+}
+
+function botTurn() {
+  if (gameOver) return;
+  $('roll-btn').disabled = true;
+  $('hold-btn').disabled = true;
+
+  function botStep() {
+    if (gameOver) return;
+
+    // Bot decides whether to hold — unpredictable and aggressive
+    const gap = WINNING_SCORE - scores[activePlayer];
+    const canWin = turnScore >= gap;
+    // Base threshold varies 15-28 each turn, plus pushes harder when behind
+    const threshold = canWin ? 0 : Math.floor(Math.random() * 14) + 15 + Math.max(0, (scores[0] - scores[activePlayer]) / 4);
+    if (turnScore >= threshold || canWin) {
+      scores[activePlayer] += turnScore;
+      $(`score${activePlayer}`).textContent = scores[activePlayer];
+      $(`turn${activePlayer}`).textContent = '0';
+
+      if (scores[activePlayer] >= WINNING_SCORE) {
+        gameOver = true;
+        $('msg').textContent = `Bot ${activePlayer + 1} wins!`;
+        $('msg').classList.add('win-msg');
+        $(`p${activePlayer}`).classList.add('winner');
+        launchConfetti();
+        return;
+      }
+
+      switchPlayer();
+      return;
+    }
+
+    // Bot rolls
+    $('dice').classList.add('rolling');
+    setTimeout(() => {
+      const die = Math.floor(Math.random() * 6) + 1;
+      $('dice').innerHTML = dieSVG(die);
+      $('dice').classList.remove('rolling');
+
+      if (die === 1) {
+        $('msg').textContent = `Bot ${activePlayer + 1} rolled a 1! Lost their turn.`;
+        switchPlayer();
+      } else {
+        turnScore += die;
+        $(`turn${activePlayer}`).textContent = turnScore;
+        $('msg').textContent = `Bot ${activePlayer + 1} rolled a ${die}...`;
+        setTimeout(botStep, 800);
+      }
+    }, 350);
+  }
+
+  $('msg').textContent = `Bot ${activePlayer + 1} is thinking...`;
+  setTimeout(botStep, 800);
 }
 
 function roll() {
-  if (gameOver) return;
+  if (gameOver || isBot(activePlayer)) return;
 
   $('roll-btn').disabled = true;
   $('hold-btn').disabled = true;
@@ -151,7 +218,7 @@ function roll() {
 }
 
 function hold() {
-  if (gameOver) return;
+  if (gameOver || isBot(activePlayer)) return;
 
   scores[activePlayer] += turnScore;
   $(`score${activePlayer}`).textContent = scores[activePlayer];
@@ -175,13 +242,19 @@ $('roll-btn').addEventListener('click', roll);
 $('hold-btn').addEventListener('click', hold);
 $('new-btn').addEventListener('click', init);
 
-document.querySelectorAll('.ps-btn').forEach(btn => {
+document.querySelectorAll('.ps-btn[data-players]').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.ps-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.ps-btn[data-players]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     numPlayers = parseInt(btn.dataset.players);
     init();
   });
+});
+
+$('bot-toggle').addEventListener('click', () => {
+  vsBot = !vsBot;
+  $('bot-toggle').classList.toggle('active', vsBot);
+  init();
 });
 
 init();
