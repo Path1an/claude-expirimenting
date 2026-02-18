@@ -32,11 +32,20 @@ function createParticles() {
   document.body.prepend(canvas);
   const ctx = canvas.getContext('2d');
 
+  let oldW = window.innerWidth, oldH = window.innerHeight;
   function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    const newW = window.innerWidth, newH = window.innerHeight;
+    canvas.width = newW;
+    canvas.height = newH;
+    for (const p of particles) {
+      p.x = (p.x / oldW) * newW;
+      p.y = (p.y / oldH) * newH;
+    }
+    oldW = newW;
+    oldH = newH;
   }
-  resize();
+  canvas.width = oldW;
+  canvas.height = oldH;
   window.addEventListener('resize', resize);
 
   const particles = Array.from({ length: 40 }, () => ({
@@ -176,6 +185,8 @@ function pulseElement(el) {
 
 // --- Confetti ---
 
+let confettiAnim = null;
+
 function launchConfetti() {
   const canvas = document.createElement('canvas');
   canvas.className = 'confetti-canvas';
@@ -221,8 +232,9 @@ function launchConfetti() {
     }
     frame++;
     if (alive && frame < 300) {
-      requestAnimationFrame(draw);
+      confettiAnim = requestAnimationFrame(draw);
     } else {
+      confettiAnim = null;
       canvas.remove();
     }
   }
@@ -363,6 +375,7 @@ function buildBoard(count) {
     div.innerHTML = `
       <h2 class="player-name" data-index="${i}">${escapeHtml(playerNames[i])}</h2>
       <div class="score" id="score${i}">0</div>
+      <div class="progress-bar"><div class="progress-fill" id="prog${i}" style="width:0%"></div><div class="progress-pending" id="progp${i}" style="width:0%"></div></div>
       <div class="turn-score">Current: <span id="turn${i}">0</span></div>
     `;
     board.appendChild(div);
@@ -371,6 +384,21 @@ function buildBoard(count) {
   document.querySelectorAll('.player-name').forEach(h2 => {
     h2.addEventListener('click', () => startNameEdit(h2));
   });
+}
+
+// --- Progress Bar ---
+
+function updateProgressBar(i) {
+  const banked = Math.min(scores[i], WINNING_SCORE);
+  const pending = (i === activePlayer && !gameOver) ? turnScore : 0;
+  const bankedPct = (banked / WINNING_SCORE) * 100;
+  const pendingPct = Math.min(pending / WINNING_SCORE * 100, 100 - bankedPct);
+  $(`prog${i}`).style.width = bankedPct + '%';
+  $(`progp${i}`).style.width = pendingPct + '%';
+}
+
+function updateAllProgressBars() {
+  for (let i = 0; i < numPlayers; i++) updateProgressBar(i);
 }
 
 // --- Game Init ---
@@ -396,6 +424,7 @@ function init() {
   buildDiceCube();
   $('msg').textContent = '';
   $('msg').classList.remove('win-msg');
+  if (confettiAnim) { cancelAnimationFrame(confettiAnim); confettiAnim = null; }
   const oldCanvas = document.querySelector('.confetti-canvas');
   if (oldCanvas) oldCanvas.remove();
   if (isBot(0)) {
@@ -408,11 +437,22 @@ function init() {
   }
 }
 
+// --- Win State ---
+
+function dimLoserCards() {
+  for (let i = 0; i < numPlayers; i++) {
+    if (i !== activePlayer) {
+      $(`p${i}`).classList.add('dimmed');
+    }
+  }
+}
+
 // --- Turn Management ---
 
 function switchPlayer() {
   $(`turn${activePlayer}`).textContent = '0';
   turnScore = 0;
+  updateProgressBar(activePlayer);
   $(`p${activePlayer}`).classList.remove('active');
   activePlayer = (activePlayer + 1) % numPlayers;
   $(`p${activePlayer}`).classList.add('active');
@@ -432,17 +472,19 @@ function botTurn() {
   $('roll-btn').disabled = true;
   $('hold-btn').disabled = true;
 
-  function botStep() {
+  function botHoldOrContinue() {
     if (gameOver || gen !== gameGen || !isBot(activePlayer)) return;
 
     const gap = WINNING_SCORE - scores[activePlayer];
     const canWin = turnScore >= gap;
     const bestOpponent = Math.max(...scores.filter((_, i) => i !== activePlayer));
-    const threshold = canWin ? 0 : Math.floor(Math.random() * 14) + 15 + Math.max(0, (bestOpponent - scores[activePlayer]) / 4);
-    if (turnScore >= threshold || canWin) {
+    const threshold = Math.floor(Math.random() * 14) + 15 + Math.max(0, (bestOpponent - scores[activePlayer]) / 4);
+
+    if (canWin || turnScore >= threshold) {
       scores[activePlayer] += turnScore;
       $(`score${activePlayer}`).textContent = scores[activePlayer];
       pulseElement($(`score${activePlayer}`));
+      updateProgressBar(activePlayer);
       $(`turn${activePlayer}`).textContent = '0';
 
       if (scores[activePlayer] >= WINNING_SCORE) {
@@ -450,6 +492,7 @@ function botTurn() {
         $('msg').textContent = `${playerNames[activePlayer]} wins!`;
         $('msg').classList.add('win-msg');
         $(`p${activePlayer}`).classList.add('winner');
+        dimLoserCards();
         recordWin(playerNames[activePlayer]);
         launchConfetti();
         return;
@@ -459,24 +502,32 @@ function botTurn() {
       return;
     }
 
+    setTimeout(botRoll, 800);
+  }
+
+  function botRoll() {
+    if (gameOver || gen !== gameGen || !isBot(activePlayer)) return;
+
     const die = Math.floor(Math.random() * 6) + 1;
     rollDice(die, () => {
       if (gen !== gameGen || !isBot(activePlayer)) return;
       if (die === 1) {
         $('msg').textContent = `${playerNames[activePlayer]} rolled a 1! Lost their turn.`;
+        updateProgressBar(activePlayer);
         switchPlayer();
       } else {
         turnScore += die;
         $(`turn${activePlayer}`).textContent = turnScore;
         pulseElement($(`turn${activePlayer}`));
+        updateProgressBar(activePlayer);
         $('msg').textContent = `${playerNames[activePlayer]} rolled a ${die}...`;
-        setTimeout(botStep, 800);
+        setTimeout(botHoldOrContinue, 800);
       }
     });
   }
 
   $('msg').textContent = `${playerNames[activePlayer]} is thinking...`;
-  setTimeout(botStep, 800);
+  setTimeout(botRoll, 800);
 }
 
 // --- Human Actions ---
@@ -490,11 +541,13 @@ function roll() {
   rollDice(die, () => {
     if (die === 1) {
       $('msg').textContent = `Rolled a 1! ${playerNames[activePlayer]} loses their turn.`;
+      updateProgressBar(activePlayer);
       switchPlayer();
     } else {
       turnScore += die;
       $(`turn${activePlayer}`).textContent = turnScore;
       pulseElement($(`turn${activePlayer}`));
+      updateProgressBar(activePlayer);
       $('msg').textContent = '';
       $('roll-btn').disabled = false;
       $('hold-btn').disabled = false;
@@ -508,6 +561,7 @@ function hold() {
   scores[activePlayer] += turnScore;
   $(`score${activePlayer}`).textContent = scores[activePlayer];
   pulseElement($(`score${activePlayer}`));
+  updateProgressBar(activePlayer);
   $(`turn${activePlayer}`).textContent = '0';
 
   if (scores[activePlayer] >= WINNING_SCORE) {
@@ -515,6 +569,7 @@ function hold() {
     $('msg').textContent = `${playerNames[activePlayer]} wins!`;
     $('msg').classList.add('win-msg');
     $(`p${activePlayer}`).classList.add('winner');
+    dimLoserCards();
     $('roll-btn').disabled = true;
     $('hold-btn').disabled = true;
     recordWin(playerNames[activePlayer]);
@@ -550,18 +605,55 @@ $('stats-btn').addEventListener('click', () => {
   $('stats-modal').classList.remove('hidden');
 });
 
-$('close-stats-btn').addEventListener('click', () => {
+let clearConfirmPending = false;
+
+function resetClearConfirm() {
+  clearConfirmPending = false;
+  $('clear-stats-btn').textContent = 'Clear Stats';
+  $('clear-stats-btn').classList.remove('confirm');
+}
+
+function closeStatsModal() {
   $('stats-modal').classList.add('hidden');
-});
+  resetClearConfirm();
+}
+
+$('close-stats-btn').addEventListener('click', closeStatsModal);
 
 $('clear-stats-btn').addEventListener('click', () => {
+  const btn = $('clear-stats-btn');
+  if (!clearConfirmPending) {
+    clearConfirmPending = true;
+    btn.textContent = 'Are you sure?';
+    btn.classList.add('confirm');
+    return;
+  }
   clearStats();
   renderStats();
+  resetClearConfirm();
 });
 
 $('stats-modal').addEventListener('click', (e) => {
-  if (e.target === $('stats-modal')) {
-    $('stats-modal').classList.add('hidden');
+  if (e.target === $('stats-modal')) closeStatsModal();
+});
+
+// --- Keyboard Controls ---
+
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT') return;
+  const modalOpen = !$('stats-modal').classList.contains('hidden');
+  if (modalOpen) {
+    if (e.key === 'Escape') closeStatsModal();
+    return;
+  }
+  if (e.key === ' ' || e.key === 'Spacebar') {
+    e.preventDefault();
+    roll();
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    hold();
+  } else if (e.key === 'n' || e.key === 'N') {
+    init();
   }
 });
 
