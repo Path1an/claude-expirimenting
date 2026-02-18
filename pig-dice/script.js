@@ -244,7 +244,7 @@ function saveStats(stats) {
 function recordWin(winnerName) {
   const stats = loadStats();
   for (const key of Object.keys(stats)) {
-    if (stats[key].lastWin) {
+    if (key !== winnerName) {
       stats[key].streak = 0;
     }
     stats[key].lastWin = false;
