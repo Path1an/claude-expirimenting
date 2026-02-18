@@ -104,6 +104,8 @@ const PERP_FACES = {
   6: [2, 3, 4, 5],
 };
 
+let diceAnim = null;
+
 function showAllFaces() {
   for (let i = 1; i <= 6; i++) {
     const face = $('dice-cube').querySelector(`.face-${i}`);
@@ -118,18 +120,51 @@ function hideEdgeFaces(n) {
   }
 }
 
-function showDiceFace(n) {
+function rollDice(n, callback) {
+  if (diceAnim) cancelAnimationFrame(diceAnim);
+  showAllFaces();
+  $('dice').classList.add('rolling');
+
   const cube = $('dice-cube');
-  const dice = $('dice');
-  dice.classList.remove('rolling');
-  // Force reflow so transition kicks in after animation removal
-  void cube.offsetHeight;
-  const { x, y } = FACE_ROTATIONS[n];
-  const spinsX = (Math.floor(Math.random() * 2) + 2) * 360;
-  const spinsY = (Math.floor(Math.random() * 2) + 2) * 360;
-  cube.style.transform = `rotateX(${spinsX + x}deg) rotateY(${spinsY + y}deg)`;
-  // Hide perpendicular faces after the transition finishes
-  cube.addEventListener('transitionend', () => hideEdgeFaces(n), { once: true });
+  // Random starting orientation
+  const sx = Math.random() * 360;
+  const sy = Math.random() * 360;
+  const sz = Math.random() * 360;
+
+  // Target rotation: many spins + correct face (no starting offset in target)
+  const { x: tx, y: ty } = FACE_ROTATIONS[n];
+  const totalX = (Math.floor(Math.random() * 2) + 4) * 360 + tx;
+  const totalY = (Math.floor(Math.random() * 2) + 5) * 360 + ty;
+  const totalZ = (Math.floor(Math.random() * 2) + 2) * 360;
+
+  const duration = 2200;
+  const start = performance.now();
+
+  function ease(t) {
+    // Fastest at start, smoothly decelerates the entire duration
+    return 1 - Math.pow(1 - t, 4);
+  }
+
+  function animate(now) {
+    const elapsed = now - start;
+    const t = Math.min(elapsed / duration, 1);
+    const p = ease(t);
+
+    const rx = sx + (totalX - sx) * p;
+    const ry = sy + (totalY - sy) * p;
+    const rz = sz + (totalZ - sz) * p;
+    cube.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg) rotateZ(${rz}deg)`;
+
+    if (t < 1) {
+      diceAnim = requestAnimationFrame(animate);
+    } else {
+      diceAnim = null;
+      $('dice').classList.remove('rolling');
+      hideEdgeFaces(n);
+      if (callback) callback();
+    }
+  }
+  diceAnim = requestAnimationFrame(animate);
 }
 
 // --- Micro-Animations ---
@@ -354,6 +389,7 @@ function init() {
     );
   }
 
+  if (diceAnim) { cancelAnimationFrame(diceAnim); diceAnim = null; }
   buildBoard(numPlayers);
   buildBotSelect();
   $('p0').classList.add('active');
@@ -423,13 +459,9 @@ function botTurn() {
       return;
     }
 
-    showAllFaces();
-  $('dice').classList.add('rolling');
-    setTimeout(() => {
+    const die = Math.floor(Math.random() * 6) + 1;
+    rollDice(die, () => {
       if (gen !== gameGen || !isBot(activePlayer)) return;
-      const die = Math.floor(Math.random() * 6) + 1;
-      showDiceFace(die);
-
       if (die === 1) {
         $('msg').textContent = `${playerNames[activePlayer]} rolled a 1! Lost their turn.`;
         switchPlayer();
@@ -440,7 +472,7 @@ function botTurn() {
         $('msg').textContent = `${playerNames[activePlayer]} rolled a ${die}...`;
         setTimeout(botStep, 800);
       }
-    }, 350);
+    });
   }
 
   $('msg').textContent = `${playerNames[activePlayer]} is thinking...`;
@@ -454,13 +486,8 @@ function roll() {
 
   $('roll-btn').disabled = true;
   $('hold-btn').disabled = true;
-  showAllFaces();
-  $('dice').classList.add('rolling');
-
-  setTimeout(() => {
-    const die = Math.floor(Math.random() * 6) + 1;
-    showDiceFace(die);
-
+  const die = Math.floor(Math.random() * 6) + 1;
+  rollDice(die, () => {
     if (die === 1) {
       $('msg').textContent = `Rolled a 1! ${playerNames[activePlayer]} loses their turn.`;
       switchPlayer();
@@ -472,7 +499,7 @@ function roll() {
       $('roll-btn').disabled = false;
       $('hold-btn').disabled = false;
     }
-  }, 350);
+  });
 }
 
 function hold() {
