@@ -12,15 +12,7 @@ function dieSVG(n) {
   const dots = pips[n].map(([x,y]) =>
     `<circle cx="${x}" cy="${y}" r="7" fill="#222"/>`
   ).join('');
-  return `<svg width="90" height="90" viewBox="0 0 90 90">
-    <defs>
-      <linearGradient id="dg" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#fff"/>
-        <stop offset="100%" stop-color="#ccc"/>
-      </linearGradient>
-      <filter id="ds"><feDropShadow dx="3" dy="3" stdDeviation="3" flood-opacity="0.4"/></filter>
-    </defs>
-    <rect x="3" y="3" width="84" height="84" rx="14" fill="url(#dg)" filter="url(#ds)" stroke="#aaa" stroke-width="1"/>
+  return `<svg width="80" height="80" viewBox="5 5 80 80">
     ${dots}
   </svg>`;
 }
@@ -73,6 +65,71 @@ function createParticles() {
     requestAnimationFrame(draw);
   }
   draw();
+}
+
+// --- 3D Dice Cube ---
+
+const FACE_ROTATIONS = {
+  1: { x: 0, y: 0 },
+  2: { x: 0, y: -90 },
+  3: { x: -90, y: 0 },
+  4: { x: 90, y: 0 },
+  5: { x: 0, y: 90 },
+  6: { x: 0, y: 180 },
+};
+
+function buildDiceCube() {
+  const dice = $('dice');
+  dice.innerHTML = '';
+  dice.classList.remove('rolling');
+  const cube = document.createElement('div');
+  cube.className = 'dice-cube';
+  cube.id = 'dice-cube';
+  for (let i = 1; i <= 6; i++) {
+    const face = document.createElement('div');
+    face.className = `dice-face face-${i}`;
+    face.innerHTML = dieSVG(i);
+    cube.appendChild(face);
+  }
+  dice.appendChild(cube);
+}
+
+// Which faces are edge-on (perpendicular) for each landing face
+const PERP_FACES = {
+  1: [2, 3, 4, 5],
+  2: [1, 3, 4, 6],
+  3: [1, 2, 5, 6],
+  4: [1, 2, 5, 6],
+  5: [1, 3, 4, 6],
+  6: [2, 3, 4, 5],
+};
+
+function showAllFaces() {
+  for (let i = 1; i <= 6; i++) {
+    const face = $('dice-cube').querySelector(`.face-${i}`);
+    if (face) face.style.visibility = '';
+  }
+}
+
+function hideEdgeFaces(n) {
+  for (const f of PERP_FACES[n]) {
+    const face = $('dice-cube').querySelector(`.face-${f}`);
+    if (face) face.style.visibility = 'hidden';
+  }
+}
+
+function showDiceFace(n) {
+  const cube = $('dice-cube');
+  const dice = $('dice');
+  dice.classList.remove('rolling');
+  // Force reflow so transition kicks in after animation removal
+  void cube.offsetHeight;
+  const { x, y } = FACE_ROTATIONS[n];
+  const spinsX = (Math.floor(Math.random() * 2) + 2) * 360;
+  const spinsY = (Math.floor(Math.random() * 2) + 2) * 360;
+  cube.style.transform = `rotateX(${spinsX + x}deg) rotateY(${spinsY + y}deg)`;
+  // Hide perpendicular faces after the transition finishes
+  cube.addEventListener('transitionend', () => hideEdgeFaces(n), { once: true });
 }
 
 // --- Micro-Animations ---
@@ -300,8 +357,7 @@ function init() {
   buildBoard(numPlayers);
   buildBotSelect();
   $('p0').classList.add('active');
-  $('dice').innerHTML = '🎲';
-  $('dice').classList.remove('rolling');
+  buildDiceCube();
   $('msg').textContent = '';
   $('msg').classList.remove('win-msg');
   const oldCanvas = document.querySelector('.confetti-canvas');
@@ -367,12 +423,12 @@ function botTurn() {
       return;
     }
 
-    $('dice').classList.add('rolling');
+    showAllFaces();
+  $('dice').classList.add('rolling');
     setTimeout(() => {
       if (gen !== gameGen || !isBot(activePlayer)) return;
       const die = Math.floor(Math.random() * 6) + 1;
-      $('dice').innerHTML = dieSVG(die);
-      $('dice').classList.remove('rolling');
+      showDiceFace(die);
 
       if (die === 1) {
         $('msg').textContent = `${playerNames[activePlayer]} rolled a 1! Lost their turn.`;
@@ -398,12 +454,12 @@ function roll() {
 
   $('roll-btn').disabled = true;
   $('hold-btn').disabled = true;
+  showAllFaces();
   $('dice').classList.add('rolling');
 
   setTimeout(() => {
     const die = Math.floor(Math.random() * 6) + 1;
-    $('dice').innerHTML = dieSVG(die);
-    $('dice').classList.remove('rolling');
+    showDiceFace(die);
 
     if (die === 1) {
       $('msg').textContent = `Rolled a 1! ${playerNames[activePlayer]} loses their turn.`;
