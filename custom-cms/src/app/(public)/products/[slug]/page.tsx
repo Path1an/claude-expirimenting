@@ -53,9 +53,6 @@ export default async function ProductPage({ params }: Props) {
             </button>
           </div>
 
-          {product.currency && (
-            <p className="text-xs text-gray-400 mt-4">Price in {product.currency}</p>
-          )}
         </div>
       </div>
     </div>

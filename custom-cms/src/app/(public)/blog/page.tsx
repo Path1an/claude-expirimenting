@@ -30,9 +30,6 @@ export default async function BlogListPage() {
                   <h2 className="text-xl font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors leading-snug">
                     {post.title}
                   </h2>
-                  {post.excerpt && (
-                    <p className="text-gray-500 mt-2 text-sm leading-relaxed line-clamp-2">{post.excerpt}</p>
-                  )}
                   <div className="flex items-center gap-3 mt-3 text-xs text-gray-400">
                     {post.author && <span>by {post.author}</span>}
                     {post.author && post.publishedAt && <span>·</span>}
