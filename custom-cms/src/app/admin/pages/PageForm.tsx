@@ -23,19 +23,23 @@ export default function PageForm({ id }: Props) {
   const [seoLoading, setSeoLoading] = useState(false);
   const [slugTouched, setSlugTouched] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (!isNew) {
-      fetch(`/api/pages/${id}`).then(r => r.json()).then(data => {
-        setTitle(data.title ?? '');
-        setSlug(data.slug ?? '');
-        setContent(data.content ?? '');
-        setMetaTitle(data.metaTitle ?? '');
-        setMetaDescription(data.metaDescription ?? '');
-        setKeywords(data.keywords ?? '');
-        setPublished(data.published ?? false);
-        setSlugTouched(true);
-      });
+      fetch(`/api/pages/${id}`)
+        .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+        .then(data => {
+          setTitle(data.title ?? '');
+          setSlug(data.slug ?? '');
+          setContent(data.content ?? '');
+          setMetaTitle(data.metaTitle ?? '');
+          setMetaDescription(data.metaDescription ?? '');
+          setKeywords(data.keywords ?? '');
+          setPublished(data.published ?? false);
+          setSlugTouched(true);
+        })
+        .catch(() => setError('Failed to load page'));
     }
   }, [id, isNew]);
 
@@ -47,38 +51,58 @@ export default function PageForm({ id }: Props) {
   async function generateWithClaude() {
     if (!title) return;
     setAiLoading(true);
-    const res = await fetch('/api/claude/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: `Write content for a page titled: ${title}`, context: 'page' }) });
-    const data = await res.json();
-    setContent(data.content ?? '');
-    setAiLoading(false);
+    try {
+      const res = await fetch('/api/claude/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: `Write content for a page titled: ${title}`, context: 'page' }) });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setContent(data.content ?? '');
+    } catch {
+      setError('Failed to generate content');
+    } finally {
+      setAiLoading(false);
+    }
   }
 
   async function generateSEO() {
     if (!content) return;
     setSeoLoading(true);
-    const res = await fetch('/api/claude/seo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content, contentType: 'page' }) });
-    const data = await res.json();
-    setMetaTitle(data.metaTitle ?? '');
-    setMetaDescription(data.metaDescription ?? '');
-    setKeywords(data.keywords ?? '');
-    setSeoLoading(false);
+    try {
+      const res = await fetch('/api/claude/seo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content, contentType: 'page' }) });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setMetaTitle(data.metaTitle ?? '');
+      setMetaDescription(data.metaDescription ?? '');
+      setKeywords(data.keywords ?? '');
+    } catch {
+      setError('Failed to generate SEO metadata');
+    } finally {
+      setSeoLoading(false);
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    const payload = { title, slug, content, metaTitle, metaDescription, keywords, published };
-    const res = isNew
-      ? await fetch('/api/pages', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-      : await fetch(`/api/pages/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-    setLoading(false);
-    if (res.ok) { setSaved(true); setTimeout(() => setSaved(false), 2000); if (isNew) router.push('/admin/pages'); }
+    setError('');
+    try {
+      const payload = { title, slug, content, metaTitle, metaDescription, keywords, published };
+      const res = isNew
+        ? await fetch('/api/pages', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+        : await fetch(`/api/pages/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      if (res.ok) { setSaved(true); setTimeout(() => setSaved(false), 2000); if (isNew) router.push('/admin/pages'); }
+      else setError('Failed to save page');
+    } catch {
+      setError('Failed to save page');
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function handleDelete() {
     if (!confirm('Delete this page?')) return;
-    await fetch(`/api/pages/${id}`, { method: 'DELETE' });
-    router.push('/admin/pages');
+    const res = await fetch(`/api/pages/${id}`, { method: 'DELETE' });
+    if (res.ok) router.push('/admin/pages');
+    else setError('Failed to delete page');
   }
 
   return (
@@ -87,6 +111,7 @@ export default function PageForm({ id }: Props) {
         <div>
           <h1 className="text-2xl font-semibold text-zinc-100">{isNew ? 'New Page' : 'Edit Page'}</h1>
           {saved && <p className="text-emerald-400 text-sm mt-1">Saved ✓</p>}
+          {error && <p className="text-red-400 text-sm mt-1">{error}</p>}
         </div>
         <div className="flex items-center gap-3">
           {!isNew && <button onClick={handleDelete} className="text-red-400 hover:text-red-300 text-sm transition-colors">Delete</button>}

@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import sanitizeHtml from 'sanitize-html';
 
 interface Props { params: Promise<{ slug: string }> }
 
@@ -53,7 +54,7 @@ export default async function BlogPostPage({ params }: Props) {
       {post.content && (
         <div
           className="prose prose-gray prose-lg max-w-none prose-headings:font-bold prose-a:text-indigo-600"
-          dangerouslySetInnerHTML={{ __html: post.content.replace(/\n/g, '<br/>') }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content.replace(/\n/g, '<br/>')) }}
         />
       )}
     </div>

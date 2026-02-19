@@ -7,15 +7,23 @@ export default function MediaUploader() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [error, setError] = useState('');
 
   async function uploadFile(file: File) {
     setUploading(true);
-    const fd = new FormData();
-    fd.append('file', file);
-    fd.append('alt', file.name.replace(/\.[^.]+$/, ''));
-    await fetch('/api/media', { method: 'POST', body: fd });
-    setUploading(false);
-    router.refresh();
+    setError('');
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('alt', file.name.replace(/\.[^.]+$/, ''));
+      const res = await fetch('/api/media', { method: 'POST', body: fd });
+      if (!res.ok) throw new Error();
+      router.refresh();
+    } catch {
+      setError('Upload failed');
+    } finally {
+      setUploading(false);
+    }
   }
 
   function handleFiles(files: FileList | null) {
@@ -39,6 +47,8 @@ export default function MediaUploader() {
       <div className="text-3xl mb-2">⊡</div>
       {uploading ? (
         <p className="text-sm">Uploading…</p>
+      ) : error ? (
+        <p className="text-sm text-red-400">{error}</p>
       ) : (
         <>
           <p className="text-sm font-medium">Drag & drop files here</p>

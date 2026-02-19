@@ -3,6 +3,7 @@ import { db } from '@/db';
 import { siteSettings } from '@/db/schema';
 import { isAuthenticated } from '@/lib/apiAuth';
 import { getCorsHeaders, invalidateCorsCache } from '@/lib/cors';
+import { SettingsSchema } from '@/lib/schemas';
 
 export async function GET(request: NextRequest) {
   const origin = request.headers.get('origin');
@@ -20,15 +21,19 @@ export async function PUT(request: NextRequest) {
   if (!(await isAuthenticated(request))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  const body = await request.json();
+  const parsed = SettingsSchema.safeParse(await request.json());
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
+  }
+  const { siteName, siteDescription, logoUrl, socialLinks, corsOrigins } = parsed.data;
   const existing = db.select().from(siteSettings).get();
 
   const values = {
-    siteName:        body.siteName ?? 'My CMS',
-    siteDescription: body.siteDescription ?? null,
-    logoUrl:         body.logoUrl ?? null,
-    socialLinks:     body.socialLinks != null ? JSON.stringify(body.socialLinks) : null,
-    corsOrigins:     Array.isArray(body.corsOrigins) ? JSON.stringify(body.corsOrigins) : null,
+    siteName:        siteName ?? 'My CMS',
+    siteDescription: siteDescription ?? null,
+    logoUrl:         logoUrl ?? null,
+    socialLinks:     socialLinks != null ? JSON.stringify(socialLinks) : null,
+    corsOrigins:     corsOrigins != null ? JSON.stringify(corsOrigins) : null,
     updatedAt:       new Date().toISOString(),
   };
 

@@ -24,20 +24,24 @@ export default function ProductForm({ id }: Props) {
   const [seoLoading, setSeoLoading] = useState(false);
   const [slugTouched, setSlugTouched] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (!isNew) {
-      fetch(`/api/products/${id}`).then(r => r.json()).then(data => {
-        setName(data.name ?? '');
-        setSlug(data.slug ?? '');
-        setDescription(data.description ?? '');
-        setPrice(String(data.price ?? ''));
-        setMetaTitle(data.metaTitle ?? '');
-        setMetaDescription(data.metaDescription ?? '');
-        setKeywords(data.keywords ?? '');
-        setPublished(data.published ?? false);
-        setSlugTouched(true);
-      });
+      fetch(`/api/products/${id}`)
+        .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+        .then(data => {
+          setName(data.name ?? '');
+          setSlug(data.slug ?? '');
+          setDescription(data.description ?? '');
+          setPrice(String(data.price ?? ''));
+          setMetaTitle(data.metaTitle ?? '');
+          setMetaDescription(data.metaDescription ?? '');
+          setKeywords(data.keywords ?? '');
+          setPublished(data.published ?? false);
+          setSlugTouched(true);
+        })
+        .catch(() => setError('Failed to load product'));
     }
   }, [id, isNew]);
 
@@ -49,38 +53,58 @@ export default function ProductForm({ id }: Props) {
   async function generateWithClaude() {
     if (!name) return;
     setAiLoading(true);
-    const res = await fetch('/api/claude/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: `Write a product description for: ${name}`, context: 'product' }) });
-    const data = await res.json();
-    setDescription(data.content ?? '');
-    setAiLoading(false);
+    try {
+      const res = await fetch('/api/claude/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: `Write a product description for: ${name}`, context: 'product' }) });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setDescription(data.content ?? '');
+    } catch {
+      setError('Failed to generate content');
+    } finally {
+      setAiLoading(false);
+    }
   }
 
   async function generateSEO() {
     if (!description) return;
     setSeoLoading(true);
-    const res = await fetch('/api/claude/seo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: description, contentType: 'product' }) });
-    const data = await res.json();
-    setMetaTitle(data.metaTitle ?? '');
-    setMetaDescription(data.metaDescription ?? '');
-    setKeywords(data.keywords ?? '');
-    setSeoLoading(false);
+    try {
+      const res = await fetch('/api/claude/seo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: description, contentType: 'product' }) });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setMetaTitle(data.metaTitle ?? '');
+      setMetaDescription(data.metaDescription ?? '');
+      setKeywords(data.keywords ?? '');
+    } catch {
+      setError('Failed to generate SEO metadata');
+    } finally {
+      setSeoLoading(false);
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    const payload = { name, slug, description, price: parseFloat(price), metaTitle, metaDescription, keywords, published };
-    const res = isNew
-      ? await fetch('/api/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-      : await fetch(`/api/products/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-    setLoading(false);
-    if (res.ok) { setSaved(true); setTimeout(() => setSaved(false), 2000); if (isNew) router.push('/admin/products'); }
+    setError('');
+    try {
+      const payload = { name, slug, description, price: parseFloat(price), metaTitle, metaDescription, keywords, published };
+      const res = isNew
+        ? await fetch('/api/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+        : await fetch(`/api/products/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      if (res.ok) { setSaved(true); setTimeout(() => setSaved(false), 2000); if (isNew) router.push('/admin/products'); }
+      else setError('Failed to save product');
+    } catch {
+      setError('Failed to save product');
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function handleDelete() {
     if (!confirm('Delete this product?')) return;
-    await fetch(`/api/products/${id}`, { method: 'DELETE' });
-    router.push('/admin/products');
+    const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
+    if (res.ok) router.push('/admin/products');
+    else setError('Failed to delete product');
   }
 
   return (
@@ -89,6 +113,7 @@ export default function ProductForm({ id }: Props) {
         <div>
           <h1 className="text-2xl font-semibold text-zinc-100">{isNew ? 'New Product' : 'Edit Product'}</h1>
           {saved && <p className="text-emerald-400 text-sm mt-1">Saved ✓</p>}
+          {error && <p className="text-red-400 text-sm mt-1">{error}</p>}
         </div>
         <div className="flex items-center gap-3">
           {!isNew && <button onClick={handleDelete} className="text-red-400 hover:text-red-300 text-sm transition-colors">Delete</button>}

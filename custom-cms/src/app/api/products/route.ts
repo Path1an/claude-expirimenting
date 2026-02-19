@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { products, type NewProduct } from '@/db/schema';
+import { products } from '@/db/schema';
 import { desc, eq } from 'drizzle-orm';
 import { getCorsHeaders } from '@/lib/cors';
+import { ProductSchema } from '@/lib/schemas';
 
 export async function OPTIONS(request: NextRequest) {
   return new NextResponse(null, { status: 204, headers: getCorsHeaders(request.headers.get('origin')) });
@@ -19,19 +20,20 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const body = await request.json() as Partial<NewProduct>;
-  if (!body.name || !body.slug || body.price == null) {
-    return NextResponse.json({ error: 'name, slug and price are required' }, { status: 400 });
+  const parsed = ProductSchema.safeParse(await request.json());
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
   }
+  const { name, slug, description, price, metaTitle, metaDescription, keywords, published } = parsed.data;
   const [created] = await db.insert(products).values({
-    name: body.name,
-    slug: body.slug,
-    description: body.description ?? null,
-    price: body.price,
-    metaTitle: body.metaTitle ?? null,
-    metaDescription: body.metaDescription ?? null,
-    keywords: body.keywords ?? null,
-    published: body.published ?? false,
+    name,
+    slug,
+    description: description ?? null,
+    price,
+    metaTitle: metaTitle ?? null,
+    metaDescription: metaDescription ?? null,
+    keywords: keywords ?? null,
+    published: published ?? false,
   }).returning();
   return NextResponse.json(created, { status: 201 });
 }

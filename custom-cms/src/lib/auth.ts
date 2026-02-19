@@ -3,9 +3,11 @@ import bcrypt from 'bcryptjs';
 import { cookies } from 'next/headers';
 
 const COOKIE_NAME = 'cms_session';
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET ?? 'change-me-in-production-32-chars!!'
-);
+
+if (!process.env.JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is not set');
+}
+const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 
 export interface SessionPayload {
   userId: number;
@@ -36,7 +38,10 @@ export async function getSession(): Promise<SessionPayload | null> {
 
   try {
     const { payload } = await jwtVerify(token, JWT_SECRET);
-    return payload as unknown as SessionPayload;
+    const userId = payload['userId'];
+    const email = payload['email'];
+    if (typeof userId !== 'number' || typeof email !== 'string') return null;
+    return { userId, email };
   } catch {
     return null;
   }

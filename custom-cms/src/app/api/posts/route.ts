@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { posts, type NewPost } from '@/db/schema';
+import { posts } from '@/db/schema';
 import { desc, eq } from 'drizzle-orm';
 import { getCorsHeaders } from '@/lib/cors';
+import { PostSchema } from '@/lib/schemas';
 
 export async function OPTIONS(request: NextRequest) {
   return new NextResponse(null, { status: 204, headers: getCorsHeaders(request.headers.get('origin')) });
@@ -19,21 +20,22 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const body = await request.json() as Partial<NewPost>;
-  if (!body.title || !body.slug) {
-    return NextResponse.json({ error: 'title and slug are required' }, { status: 400 });
+  const parsed = PostSchema.safeParse(await request.json());
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
   }
+  const { title, slug, content, author, tags, publishedAt, metaTitle, metaDescription, keywords, published } = parsed.data;
   const [created] = await db.insert(posts).values({
-    title: body.title,
-    slug: body.slug,
-    content: body.content ?? null,
-    author: body.author ?? null,
-    tags: body.tags ?? null,
-    publishedAt: body.publishedAt ?? null,
-    metaTitle: body.metaTitle ?? null,
-    metaDescription: body.metaDescription ?? null,
-    keywords: body.keywords ?? null,
-    published: body.published ?? false,
+    title,
+    slug,
+    content: content ?? null,
+    author: author ?? null,
+    tags: tags ?? null,
+    publishedAt: publishedAt ?? null,
+    metaTitle: metaTitle ?? null,
+    metaDescription: metaDescription ?? null,
+    keywords: keywords ?? null,
+    published: published ?? false,
   }).returning();
   return NextResponse.json(created, { status: 201 });
 }
