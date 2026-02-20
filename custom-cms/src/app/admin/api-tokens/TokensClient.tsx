@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { API } from '@/lib/api-paths';
 
 interface Token {
   id: number;
@@ -25,7 +26,7 @@ export default function TokensClient({ tokens }: Props) {
     e.preventDefault();
     if (!name.trim()) return;
     setCreating(true);
-    const res = await fetch('/api/tokens', {
+    const res = await fetch(API.tokens, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name }),
@@ -43,7 +44,7 @@ export default function TokensClient({ tokens }: Props) {
   async function handleDelete(id: number, tokenName: string) {
     if (!confirm(`Revoke token "${tokenName}"? This cannot be undone.`)) return;
     setDeleteError(null);
-    const res = await fetch(`/api/tokens/${id}`, { method: 'DELETE' });
+    const res = await fetch(`${API.tokens}/${id}`, { method: 'DELETE' });
     if (!res.ok) {
       setDeleteError(`Failed to revoke token "${tokenName}". Please try again.`);
       return;

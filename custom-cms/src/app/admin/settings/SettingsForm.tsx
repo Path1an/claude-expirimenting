@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import type { SiteSettings } from '@/db/schema';
+import { API } from '@/lib/api-paths';
 
 const inputCls = 'w-full bg-zinc-800 border border-zinc-700 text-zinc-100 placeholder:text-zinc-500 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500';
 const labelCls = 'block text-sm font-medium text-zinc-300 mb-1.5';
@@ -31,7 +32,7 @@ export default function SettingsForm({ settings }: Props) {
     e.preventDefault();
     setSaving(true);
     const origins = corsOrigins.split('\n').map((s: string) => s.trim()).filter(Boolean);
-    const res = await fetch('/api/settings', {
+    const res = await fetch(API.settings, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

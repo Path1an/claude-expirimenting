@@ -1,6 +1,7 @@
 'use client';
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { API } from '@/lib/api-paths';
 
 export default function MediaUploader() {
   const router = useRouter();
@@ -16,7 +17,7 @@ export default function MediaUploader() {
       const fd = new FormData();
       fd.append('file', file);
       fd.append('alt', file.name.replace(/\.[^.]+$/, ''));
-      const res = await fetch('/api/media', { method: 'POST', body: fd });
+      const res = await fetch(API.media, { method: 'POST', body: fd });
       if (!res.ok) throw new Error();
       router.refresh();
     } catch {

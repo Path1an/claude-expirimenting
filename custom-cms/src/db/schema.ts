@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, real, index } from 'drizzle-orm/sqlite-core';
 import { sql } from 'drizzle-orm';
 
 // ── Admin Users ───────────────────────────────────────────────────────────────
@@ -21,7 +21,9 @@ export const pages = sqliteTable('pages', {
   published:       integer('published', { mode: 'boolean' }).default(false).notNull(),
   createdAt:       text('created_at').default(sql`(datetime('now'))`).notNull(),
   updatedAt:       text('updated_at').default(sql`(datetime('now'))`).notNull(),
-});
+}, (t) => ({
+  pubCreatedIdx: index('idx_pages_pub_created').on(t.published, t.createdAt),
+}));
 
 // ── Media Library ─────────────────────────────────────────────────────────────
 export const media = sqliteTable('media', {
@@ -48,7 +50,9 @@ export const products = sqliteTable('products', {
   published:       integer('published', { mode: 'boolean' }).default(false).notNull(),
   createdAt:       text('created_at').default(sql`(datetime('now'))`).notNull(),
   updatedAt:       text('updated_at').default(sql`(datetime('now'))`).notNull(),
-});
+}, (t) => ({
+  pubCreatedIdx: index('idx_products_pub_created').on(t.published, t.createdAt),
+}));
 
 // ── Product Images ────────────────────────────────────────────────────────────
 export const productImages = sqliteTable('product_images', {
@@ -73,7 +77,9 @@ export const posts = sqliteTable('posts', {
   published:       integer('published', { mode: 'boolean' }).default(false).notNull(),
   createdAt:       text('created_at').default(sql`(datetime('now'))`).notNull(),
   updatedAt:       text('updated_at').default(sql`(datetime('now'))`).notNull(),
-});
+}, (t) => ({
+  pubCreatedIdx: index('idx_posts_pub_created').on(t.published, t.createdAt),
+}));
 
 // ── API Tokens ────────────────────────────────────────────────────────────────
 export const apiTokens = sqliteTable('api_tokens', {
