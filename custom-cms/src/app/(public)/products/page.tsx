@@ -27,35 +27,35 @@ export default async function ProductsListPage() {
   return (
     <div>
       <div className="mb-12">
-        <p className="text-sm font-medium text-indigo-600 mb-2 tracking-wide uppercase">Shop</p>
-        <h1 className="text-4xl font-bold tracking-tight text-gray-900">All products</h1>
+        <p className="text-sm font-medium text-indigo-600 dark:text-indigo-400 mb-2 tracking-wide uppercase">Shop</p>
+        <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100">All products</h1>
       </div>
 
       {allProducts.length === 0 && (
-        <p className="text-gray-400 text-center py-20">No products listed yet.</p>
+        <p className="text-gray-400 dark:text-gray-500 text-center py-20">No products listed yet.</p>
       )}
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {allProducts.map((product) => (
           <Link key={product.id} href={`/products/${product.slug}`}
-            className="group block rounded-2xl border border-gray-100 overflow-hidden hover:border-gray-300 hover:shadow-sm transition-all">
+            className="group block rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm transition-all">
             {imageMap.get(product.id) ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={imageMap.get(product.id)!.url} alt={imageMap.get(product.id)!.alt ?? product.name}
                 className="h-52 w-full object-cover" />
             ) : (
-              <div className="bg-gray-50 h-52 flex items-center justify-center text-gray-300 text-xs font-mono">
+              <div className="bg-gray-50 dark:bg-gray-900 h-52 flex items-center justify-center text-gray-300 dark:text-gray-600 text-xs font-mono">
                 no image
               </div>
             )}
             <div className="p-5">
-              <h2 className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors leading-snug">
+              <h2 className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors leading-snug">
                 {product.name}
               </h2>
               {product.description && (
-                <p className="text-gray-500 text-sm mt-1.5 line-clamp-2 leading-relaxed">{product.description}</p>
+                <p className="text-gray-500 dark:text-gray-400 text-sm mt-1.5 line-clamp-2 leading-relaxed">{product.description}</p>
               )}
-              <p className="text-gray-900 font-bold text-lg mt-3">${product.price.toFixed(2)}</p>
+              <p className="text-gray-900 dark:text-gray-100 font-bold text-lg mt-3">${product.price.toFixed(2)}</p>
             </div>
           </Link>
         ))}

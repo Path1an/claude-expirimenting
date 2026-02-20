@@ -26,15 +26,15 @@ export default async function PublicPage({ params }: Props) {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700 transition-colors mb-10">
+      <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors mb-10">
         ← Home
       </Link>
 
       <article>
-        <h1 className="text-4xl font-bold tracking-tight text-gray-900 leading-tight mb-8">{page.title}</h1>
+        <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100 leading-tight mb-8">{page.title}</h1>
         {page.content && (
           <div
-            className="prose prose-gray prose-lg max-w-none prose-headings:font-bold prose-a:text-indigo-600"
+            className="prose prose-gray dark:prose-invert prose-lg max-w-none prose-headings:font-bold prose-a:text-indigo-600 dark:prose-a:text-indigo-400"
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(page.content).replace(/\n/g, '<br/>') }}
           />
         )}
