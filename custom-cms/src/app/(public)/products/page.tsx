@@ -1,6 +1,6 @@
 import { db } from '@/db';
-import { products } from '@/db/schema';
-import { desc, eq } from 'drizzle-orm';
+import { products, productImages, media } from '@/db/schema';
+import { desc, eq, inArray } from 'drizzle-orm';
 import Link from 'next/link';
 
 export const metadata = { title: 'Products' };
@@ -9,6 +9,20 @@ export default async function ProductsListPage() {
   const allProducts = await db.select().from(products)
     .where(eq(products.published, true))
     .orderBy(desc(products.createdAt));
+
+  const ids = allProducts.map(p => p.id);
+  const firstImages = ids.length > 0
+    ? db.select({ productId: productImages.productId, url: media.url, alt: media.alt })
+        .from(productImages)
+        .innerJoin(media, eq(productImages.mediaId, media.id))
+        .where(inArray(productImages.productId, ids))
+        .orderBy(productImages.productId, productImages.sortOrder)
+        .all()
+    : [];
+  const imageMap = new Map<number, { url: string; alt: string | null }>();
+  for (const img of firstImages) {
+    if (!imageMap.has(img.productId)) imageMap.set(img.productId, { url: img.url, alt: img.alt ?? null });
+  }
 
   return (
     <div>
@@ -25,9 +39,15 @@ export default async function ProductsListPage() {
         {allProducts.map((product) => (
           <Link key={product.id} href={`/products/${product.slug}`}
             className="group block rounded-2xl border border-gray-100 overflow-hidden hover:border-gray-300 hover:shadow-sm transition-all">
-            <div className="bg-gray-50 h-52 flex items-center justify-center text-gray-300 text-xs font-mono">
-              no image
-            </div>
+            {imageMap.get(product.id) ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={imageMap.get(product.id)!.url} alt={imageMap.get(product.id)!.alt ?? product.name}
+                className="h-52 w-full object-cover" />
+            ) : (
+              <div className="bg-gray-50 h-52 flex items-center justify-center text-gray-300 text-xs font-mono">
+                no image
+              </div>
+            )}
             <div className="p-5">
               <h2 className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors leading-snug">
                 {product.name}

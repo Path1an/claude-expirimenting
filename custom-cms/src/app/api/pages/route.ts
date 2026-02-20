@@ -4,6 +4,7 @@ import { pages } from '@/db/schema';
 import { desc, eq } from 'drizzle-orm';
 import { getCorsHeaders } from '@/lib/cors';
 import { PageSchema } from '@/lib/schemas';
+import { isAuthenticated } from '@/lib/apiAuth';
 
 export async function OPTIONS(request: NextRequest) {
   return new NextResponse(null, { status: 204, headers: getCorsHeaders(request.headers.get('origin')) });
@@ -11,7 +12,8 @@ export async function OPTIONS(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   const origin = request.headers.get('origin');
-  const publishedOnly = request.nextUrl.searchParams.get('published') === 'true';
+  const authed = await isAuthenticated(request);
+  const publishedOnly = !authed || request.nextUrl.searchParams.get('published') === 'true';
   const query = db.select().from(pages).orderBy(desc(pages.createdAt));
   const results = publishedOnly
     ? await query.where(eq(pages.published, true))

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { products } from '@/db/schema';
+import { products, productImages, media } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { ProductUpdateSchema } from '@/lib/schemas';
 
@@ -10,7 +10,13 @@ export async function GET(_: NextRequest, { params }: Params) {
   const { id } = await params;
   const product = db.select().from(products).where(eq(products.id, Number(id))).get();
   if (!product) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  return NextResponse.json(product);
+  const images = db.select({ id: productImages.id, url: media.url, alt: media.alt, sortOrder: productImages.sortOrder })
+    .from(productImages)
+    .innerJoin(media, eq(productImages.mediaId, media.id))
+    .where(eq(productImages.productId, Number(id)))
+    .orderBy(productImages.sortOrder)
+    .all();
+  return NextResponse.json({ ...product, images });
 }
 
 export async function PUT(request: NextRequest, { params }: Params) {

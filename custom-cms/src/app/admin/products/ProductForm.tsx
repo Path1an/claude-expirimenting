@@ -1,5 +1,6 @@
 'use client';
 import ContentForm, { type FormConfig, inputCls, labelCls } from '@/app/admin/_components/ContentForm';
+import ProductImageManager from './ProductImageManager';
 import { API } from '@/lib/api-paths';
 
 const PRODUCT_CONFIG: FormConfig = {
@@ -31,5 +32,14 @@ const PRODUCT_CONFIG: FormConfig = {
 };
 
 export default function ProductForm({ id }: { id?: string }) {
-  return <ContentForm id={id} config={PRODUCT_CONFIG} />;
+  return (
+    <>
+      <ContentForm id={id} config={PRODUCT_CONFIG} />
+      {id ? (
+        <ProductImageManager productId={Number(id)} />
+      ) : (
+        <p className="mt-4 text-xs text-zinc-600">Save the product first to add images.</p>
+      )}
+    </>
+  );
 }
