@@ -79,7 +79,8 @@ export const posts = sqliteTable('posts', {
 export const apiTokens = sqliteTable('api_tokens', {
   id:          integer('id').primaryKey({ autoIncrement: true }),
   name:        text('name').notNull(),
-  token:       text('token').notNull().unique(), // plaintext: cms_ + 32 hex chars
+  token:       text('token').notNull().unique(), // SHA-256 hash of the raw token
+  tokenHint:   text('token_hint'),               // last 4 chars of raw token for masked display
   createdAt:   text('created_at').default(sql`(datetime('now'))`).notNull(),
   lastUsedAt:  text('last_used_at'),
 });

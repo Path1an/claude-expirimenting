@@ -4,6 +4,7 @@ import { media } from '@/db/schema';
 import { desc } from 'drizzle-orm';
 import { saveUpload } from '@/lib/media';
 import { getCorsHeaders } from '@/lib/cors';
+import { isAuthenticated } from '@/lib/apiAuth';
 
 export async function OPTIONS(request: NextRequest) {
   return new NextResponse(null, { status: 204, headers: getCorsHeaders(request.headers.get('origin')) });
@@ -16,6 +17,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  if (!(await isAuthenticated(request))) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   const formData = await request.formData();
   const file = formData.get('file') as File | null;
   if (!file) {

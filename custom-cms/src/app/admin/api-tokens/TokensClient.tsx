@@ -19,6 +19,7 @@ export default function TokensClient({ tokens }: Props) {
   const [newToken, setNewToken] = useState<{ name: string; fullToken: string } | null>(null);
   const [copied, setCopied] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -41,7 +42,12 @@ export default function TokensClient({ tokens }: Props) {
 
   async function handleDelete(id: number, tokenName: string) {
     if (!confirm(`Revoke token "${tokenName}"? This cannot be undone.`)) return;
-    await fetch(`/api/tokens/${id}`, { method: 'DELETE' });
+    setDeleteError(null);
+    const res = await fetch(`/api/tokens/${id}`, { method: 'DELETE' });
+    if (!res.ok) {
+      setDeleteError(`Failed to revoke token "${tokenName}". Please try again.`);
+      return;
+    }
     router.refresh();
   }
 
@@ -72,6 +78,14 @@ export default function TokensClient({ tokens }: Props) {
               {copied ? 'Copied ✓' : 'Copy'}
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Delete error */}
+      {deleteError && (
+        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-center justify-between">
+          <p className="text-red-400 text-sm">{deleteError}</p>
+          <button onClick={() => setDeleteError(null)} className="text-red-400/50 hover:text-red-400 text-lg leading-none ml-4">×</button>
         </div>
       )}
 

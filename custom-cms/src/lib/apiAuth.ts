@@ -2,6 +2,7 @@ import { db } from '@/db';
 import { apiTokens } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { getSession } from './auth';
+import { createHash } from 'crypto';
 
 export async function isAuthenticated(request: Request): Promise<boolean> {
   // 1. Cookie session (admin UI)
@@ -12,8 +13,9 @@ export async function isAuthenticated(request: Request): Promise<boolean> {
   const authHeader = request.headers.get('Authorization') ?? '';
   if (!authHeader.startsWith('Bearer cms_')) return false;
 
-  const token = authHeader.slice(7).trim();
-  const row = db.select().from(apiTokens).where(eq(apiTokens.token, token)).get();
+  const rawToken = authHeader.slice(7).trim();
+  const tokenHash = createHash('sha256').update(rawToken).digest('hex');
+  const row = db.select().from(apiTokens).where(eq(apiTokens.token, tokenHash)).get();
   if (!row) return false;
 
   // Update lastUsedAt (synchronous since better-sqlite3 is sync)
