@@ -6,7 +6,7 @@ if (!process.env.JWT_SECRET) {
 }
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 
-export async function proxy(request: NextRequest) {
+export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const reqMethod = request.method;
 
@@ -23,7 +23,6 @@ export async function proxy(request: NextRequest) {
 
   // Protect write API routes
   if (pathname.startsWith('/api/') && !pathname.startsWith('/api/auth/')) {
-    // Always let CORS preflights through — route handlers return proper headers
     if (reqMethod === 'OPTIONS') return NextResponse.next();
 
     const isPublicGet =
@@ -35,11 +34,9 @@ export async function proxy(request: NextRequest) {
         pathname.startsWith('/api/settings'));
 
     if (!isPublicGet) {
-      // Bearer token: pass through to route handler for DB verification
       const authHeader = request.headers.get('Authorization') ?? '';
       if (authHeader.startsWith('Bearer cms_')) return NextResponse.next();
 
-      // Cookie session: verify JWT in Edge runtime (jose works here)
       const sessionToken = request.cookies.get('cms_session')?.value;
       if (!sessionToken) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       try {
