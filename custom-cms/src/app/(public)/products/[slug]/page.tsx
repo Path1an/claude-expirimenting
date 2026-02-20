@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import ImageGallery from './ImageGallery';
 
 interface Props { params: Promise<{ slug: string }> }
 
@@ -40,23 +41,12 @@ export default async function ProductPage({ params }: Props) {
         {/* Images */}
         <div>
           {images.length > 0 ? (
-            <div className="space-y-3">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={images[0].url} alt={images[0].alt ?? product.name}
-                className="w-full rounded-3xl object-cover h-80 lg:h-96 border border-gray-100 dark:border-gray-800" />
-              {images.length > 1 && (
-                <div className="flex gap-3 overflow-x-auto pb-1">
-                  {images.slice(1).map((img, i) => (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img key={i} src={img.url} alt={img.alt ?? product.name}
-                      className="w-20 h-20 rounded-xl object-cover border border-gray-100 dark:border-gray-800 flex-shrink-0" />
-                  ))}
-                </div>
-              )}
-            </div>
+            <ImageGallery images={images} productName={product.name} />
           ) : (
-            <div className="bg-gray-50 dark:bg-gray-900 rounded-3xl h-80 lg:h-96 flex items-center justify-center text-gray-300 dark:text-gray-600 text-xs font-mono border border-gray-100 dark:border-gray-800">
-              no image
+            <div className="bg-gray-50 dark:bg-gray-900 rounded-3xl h-80 lg:h-96 flex items-center justify-center border border-gray-100 dark:border-gray-800">
+              <svg className="w-16 h-16 text-gray-200 dark:text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+              </svg>
             </div>
           )}
         </div>

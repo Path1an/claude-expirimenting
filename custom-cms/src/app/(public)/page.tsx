@@ -27,7 +27,8 @@ export default async function HomePage() {
   return (
     <div className="space-y-20">
       {/* Hero */}
-      <section className="pt-8 pb-4">
+      <section className="pt-8 pb-4 relative overflow-hidden">
+        <div aria-hidden="true" className="absolute -top-20 -right-32 w-80 h-80 rounded-full bg-indigo-100/60 dark:bg-indigo-900/20 blur-3xl pointer-events-none" />
         <p className="text-sm font-medium text-indigo-600 dark:text-indigo-400 mb-3 tracking-wide uppercase">Welcome</p>
         <h1 className="text-5xl font-bold tracking-tight text-gray-900 dark:text-gray-100 leading-tight max-w-2xl">
           Ideas, stories, and products worth exploring.
@@ -89,8 +90,10 @@ export default async function HomePage() {
                   <img src={imageMap.get(product.id)!.url} alt={imageMap.get(product.id)!.alt ?? product.name}
                     className="h-40 w-full object-cover" />
                 ) : (
-                  <div className="bg-gray-50 dark:bg-gray-900 h-40 flex items-center justify-center text-gray-300 dark:text-gray-600 text-xs font-mono">
-                    no image
+                  <div className="bg-gray-50 dark:bg-gray-900 h-40 flex items-center justify-center">
+                    <svg className="w-10 h-10 text-gray-200 dark:text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                    </svg>
                   </div>
                 )}
                 <div className="p-4">

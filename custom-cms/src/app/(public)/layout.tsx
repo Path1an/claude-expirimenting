@@ -25,7 +25,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-gray-100 dark:border-gray-800 mt-24">
+      <footer className="border-t border-gray-100 dark:border-gray-800 mt-24 bg-gray-50 dark:bg-gray-900/50">
         <div className="max-w-5xl mx-auto px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-4">
           <span className="font-semibold text-gray-900 dark:text-gray-100">My Site</span>
           <div className="flex gap-6 text-sm text-gray-400 dark:text-gray-500">

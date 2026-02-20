@@ -24,6 +24,9 @@ export default async function BlogPostPage({ params }: Props) {
   const post = db.select().from(posts).where(eq(posts.slug, slug)).get();
   if (!post || !post.published) notFound();
 
+  const wordCount = (post.content ?? '').replace(/<[^>]+>/g, '').split(/\s+/).filter(Boolean).length;
+  const readTime = Math.max(1, Math.ceil(wordCount / 200));
+
   return (
     <div className="max-w-2xl mx-auto">
       {/* Back */}
@@ -32,7 +35,7 @@ export default async function BlogPostPage({ params }: Props) {
       </Link>
 
       {/* Header */}
-      <header className="mb-10">
+      <header className="mb-8">
         {post.tags && (
           <div className="flex gap-2 mb-4 flex-wrap">
             {post.tags.split(',').map((t) => (
@@ -45,10 +48,14 @@ export default async function BlogPostPage({ params }: Props) {
         <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100 leading-tight">{post.title}</h1>
         <div className="flex items-center gap-3 mt-4 text-sm text-gray-400 dark:text-gray-500">
           {post.author && <span>by {post.author}</span>}
-          {post.author && post.publishedAt && <span>·</span>}
+          {(post.author || post.publishedAt) && <span>·</span>}
           {post.publishedAt && <span>{post.publishedAt.slice(0, 10)}</span>}
+          {post.publishedAt && <span>·</span>}
+          <span>{readTime} min read</span>
         </div>
       </header>
+
+      <hr className="border-gray-100 dark:border-gray-800 mb-10" />
 
       {/* Body */}
       {post.content && (

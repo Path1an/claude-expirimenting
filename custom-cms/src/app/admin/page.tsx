@@ -1,21 +1,40 @@
 import { db } from '@/db';
 import { pages, posts, products, media } from '@/db/schema';
-import { count } from 'drizzle-orm';
+import { count, desc } from 'drizzle-orm';
 import Link from 'next/link';
 
 export default async function DashboardPage() {
-  const [[{ pageCount }], [{ postCount }], [{ productCount }], [{ mediaCount }]] = await Promise.all([
+  const [
+    [{ pageCount }],
+    [{ postCount }],
+    [{ productCount }],
+    [{ mediaCount }],
+    recentPages,
+    recentPosts,
+    recentProducts,
+  ] = await Promise.all([
     db.select({ pageCount: count() }).from(pages),
     db.select({ postCount: count() }).from(posts),
     db.select({ productCount: count() }).from(products),
     db.select({ mediaCount: count() }).from(media),
+    db.select({ id: pages.id, title: pages.title, createdAt: pages.createdAt }).from(pages).orderBy(desc(pages.createdAt)).limit(5),
+    db.select({ id: posts.id, title: posts.title, createdAt: posts.createdAt }).from(posts).orderBy(desc(posts.createdAt)).limit(5),
+    db.select({ id: products.id, name: products.name, createdAt: products.createdAt }).from(products).orderBy(desc(products.createdAt)).limit(5),
   ]);
 
+  const recentItems = [
+    ...recentPages.map(p => ({ type: 'Page' as const, label: p.title, href: `/admin/pages/${p.id}`, createdAt: p.createdAt, badge: 'bg-blue-500/15 text-blue-400' })),
+    ...recentPosts.map(p => ({ type: 'Post' as const, label: p.title, href: `/admin/posts/${p.id}`, createdAt: p.createdAt, badge: 'bg-violet-500/15 text-violet-400' })),
+    ...recentProducts.map(p => ({ type: 'Product' as const, label: p.name, href: `/admin/products/${p.id}`, createdAt: p.createdAt, badge: 'bg-emerald-500/15 text-emerald-400' })),
+  ]
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .slice(0, 5);
+
   const stats = [
-    { label: 'Pages', value: pageCount, href: '/admin/pages', icon: '□', color: 'text-blue-400', bg: 'bg-blue-500/10' },
-    { label: 'Blog Posts', value: postCount, href: '/admin/posts', icon: '≡', color: 'text-violet-400', bg: 'bg-violet-500/10' },
-    { label: 'Products', value: productCount, href: '/admin/products', icon: '◈', color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-    { label: 'Media Files', value: mediaCount, href: '/admin/media', icon: '⊡', color: 'text-amber-400', bg: 'bg-amber-500/10' },
+    { label: 'Pages', value: pageCount, href: '/admin/pages', icon: '□', color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-l-blue-500' },
+    { label: 'Blog Posts', value: postCount, href: '/admin/posts', icon: '≡', color: 'text-violet-400', bg: 'bg-violet-500/10', border: 'border-l-violet-500' },
+    { label: 'Products', value: productCount, href: '/admin/products', icon: '◈', color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-l-emerald-500' },
+    { label: 'Media Files', value: mediaCount, href: '/admin/media', icon: '⊡', color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-l-amber-500' },
   ];
 
   return (
@@ -30,7 +49,7 @@ export default async function DashboardPage() {
           <Link
             key={s.label}
             href={s.href}
-            className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 hover:border-zinc-700 transition-colors group"
+            className={`bg-zinc-900 border border-zinc-800 border-l-2 ${s.border} rounded-xl p-5 hover:border-zinc-700 hover:border-l-current transition-colors group`}
           >
             <div className={`w-10 h-10 ${s.bg} rounded-lg flex items-center justify-center text-lg ${s.color} mb-4`}>
               {s.icon}
@@ -41,7 +60,7 @@ export default async function DashboardPage() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <Link href="/admin/pages/new" className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 hover:border-indigo-500/50 hover:bg-indigo-500/5 transition-all group">
           <div className="text-2xl mb-3">+</div>
           <div className="font-medium text-zinc-100 text-sm">New Page</div>
@@ -58,6 +77,28 @@ export default async function DashboardPage() {
           <div className="text-zinc-500 text-xs mt-1">Add a product listing</div>
         </Link>
       </div>
+
+      {recentItems.length > 0 && (
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+          <h2 className="text-sm font-medium text-zinc-400 mb-4">Recent content</h2>
+          <div className="space-y-1">
+            {recentItems.map((item, i) => (
+              <Link key={i} href={item.href}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-zinc-800 transition-colors group">
+                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${item.badge} shrink-0 w-16 text-center`}>
+                  {item.type}
+                </span>
+                <span className="text-sm text-zinc-200 group-hover:text-zinc-100 truncate flex-1">
+                  {item.label}
+                </span>
+                <span className="text-xs text-zinc-600 shrink-0">
+                  {item.createdAt.slice(0, 10)}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

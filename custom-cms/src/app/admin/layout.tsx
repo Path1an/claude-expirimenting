@@ -16,10 +16,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         {/* Logo */}
         <div className="p-5 border-b border-zinc-800">
           <Link href="/admin" className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-xs font-bold">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center text-white text-xs font-bold">
               C
             </div>
-            <span className="font-semibold text-zinc-100 text-sm">CMS Admin</span>
+            <span className="font-bold tracking-tight text-zinc-100 text-sm">CMS Admin</span>
           </Link>
         </div>
 
