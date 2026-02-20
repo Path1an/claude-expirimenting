@@ -15,6 +15,7 @@ export const pages = sqliteTable('pages', {
   title:           text('title').notNull(),
   slug:            text('slug').notNull().unique(),
   content:         text('content'),
+  sortOrder:       integer('sort_order').default(0).notNull(),
   metaTitle:       text('meta_title'),
   metaDescription: text('meta_description'),
   keywords:        text('keywords'),
@@ -44,6 +45,7 @@ export const products = sqliteTable('products', {
   slug:            text('slug').notNull().unique(),
   description:     text('description'),
   price:           real('price').notNull(),
+  sortOrder:       integer('sort_order').default(0).notNull(),
   metaTitle:       text('meta_title'),
   metaDescription: text('meta_description'),
   keywords:        text('keywords'),
@@ -68,6 +70,7 @@ export const posts = sqliteTable('posts', {
   title:           text('title').notNull(),
   slug:            text('slug').notNull().unique(),
   content:         text('content'),
+  sortOrder:       integer('sort_order').default(0).notNull(),
   author:          text('author'),
   tags:            text('tags'),           // JSON string: string[]
   publishedAt:     text('published_at'),

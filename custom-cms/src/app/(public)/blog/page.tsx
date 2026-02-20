@@ -1,6 +1,6 @@
 import { db } from '@/db';
 import { posts } from '@/db/schema';
-import { desc, eq } from 'drizzle-orm';
+import { asc, eq } from 'drizzle-orm';
 import Link from 'next/link';
 
 export const metadata = { title: 'Blog' };
@@ -8,7 +8,7 @@ export const metadata = { title: 'Blog' };
 export default async function BlogListPage() {
   const allPosts = await db.select().from(posts)
     .where(eq(posts.published, true))
-    .orderBy(desc(posts.createdAt));
+    .orderBy(asc(posts.sortOrder), asc(posts.id));
 
   return (
     <div>

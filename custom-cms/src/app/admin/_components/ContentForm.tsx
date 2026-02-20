@@ -138,9 +138,7 @@ export default function ContentForm({ id, config }: { id?: string; config: FormC
         ? await fetch(config.apiBase, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
         : await fetch(`${config.apiBase}/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       if (res.ok) {
-        setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
-        if (isNew) router.push(config.listPath);
+        router.push(config.listPath);
       } else {
         setError(`Failed to save ${config.label.toLowerCase()}`);
       }

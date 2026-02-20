@@ -1,6 +1,6 @@
 import { db } from '@/db';
 import { products, productImages, media } from '@/db/schema';
-import { desc, eq, inArray } from 'drizzle-orm';
+import { asc, eq, inArray } from 'drizzle-orm';
 import Link from 'next/link';
 
 export const metadata = { title: 'Products' };
@@ -8,7 +8,7 @@ export const metadata = { title: 'Products' };
 export default async function ProductsListPage() {
   const allProducts = await db.select().from(products)
     .where(eq(products.published, true))
-    .orderBy(desc(products.createdAt));
+    .orderBy(asc(products.sortOrder), asc(products.id));
 
   const ids = allProducts.map(p => p.id);
   const firstImages = ids.length > 0
