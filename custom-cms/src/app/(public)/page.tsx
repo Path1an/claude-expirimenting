@@ -1,12 +1,12 @@
 import { db } from '@/db';
 import { pages, posts, products, productImages, media } from '@/db/schema';
-import { asc, desc, eq, inArray } from 'drizzle-orm';
+import { asc, eq, inArray } from 'drizzle-orm';
 import Link from 'next/link';
 
 export default async function HomePage() {
   const [recentPages, recentPosts, recentProducts] = await Promise.all([
-    db.select().from(pages).where(eq(pages.published, true)).orderBy(desc(pages.createdAt)).limit(3),
-    db.select().from(posts).where(eq(posts.published, true)).orderBy(desc(posts.createdAt)).limit(3),
+    db.select().from(pages).where(eq(pages.published, true)).orderBy(asc(pages.sortOrder), asc(pages.id)).limit(3),
+    db.select().from(posts).where(eq(posts.published, true)).orderBy(asc(posts.sortOrder), asc(posts.id)).limit(3),
     db.select().from(products).where(eq(products.published, true)).orderBy(asc(products.sortOrder), asc(products.id)).limit(4),
   ]);
 
