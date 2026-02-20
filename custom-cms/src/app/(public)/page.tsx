@@ -1,6 +1,6 @@
 import { db } from '@/db';
-import { pages, posts, products } from '@/db/schema';
-import { desc, eq } from 'drizzle-orm';
+import { pages, posts, products, productImages, media } from '@/db/schema';
+import { desc, eq, inArray } from 'drizzle-orm';
 import Link from 'next/link';
 
 export default async function HomePage() {
@@ -9,6 +9,20 @@ export default async function HomePage() {
     db.select().from(posts).where(eq(posts.published, true)).orderBy(desc(posts.createdAt)).limit(3),
     db.select().from(products).where(eq(products.published, true)).orderBy(desc(products.createdAt)).limit(4),
   ]);
+
+  const productIds = recentProducts.map(p => p.id);
+  const firstImages = productIds.length > 0
+    ? db.select({ productId: productImages.productId, url: media.url, alt: media.alt })
+        .from(productImages)
+        .innerJoin(media, eq(productImages.mediaId, media.id))
+        .where(inArray(productImages.productId, productIds))
+        .orderBy(productImages.productId, productImages.sortOrder)
+        .all()
+    : [];
+  const imageMap = new Map<number, { url: string; alt: string | null }>();
+  for (const img of firstImages) {
+    if (!imageMap.has(img.productId)) imageMap.set(img.productId, { url: img.url, alt: img.alt ?? null });
+  }
 
   return (
     <div className="space-y-20">
@@ -70,9 +84,15 @@ export default async function HomePage() {
             {recentProducts.map((product) => (
               <Link key={product.id} href={`/products/${product.slug}`}
                 className="group block rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm transition-all">
-                <div className="bg-gray-50 dark:bg-gray-900 h-40 flex items-center justify-center text-gray-300 dark:text-gray-600 text-xs font-mono">
-                  no image
-                </div>
+                {imageMap.get(product.id) ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={imageMap.get(product.id)!.url} alt={imageMap.get(product.id)!.alt ?? product.name}
+                    className="h-40 w-full object-cover" />
+                ) : (
+                  <div className="bg-gray-50 dark:bg-gray-900 h-40 flex items-center justify-center text-gray-300 dark:text-gray-600 text-xs font-mono">
+                    no image
+                  </div>
+                )}
                 <div className="p-4">
                   <h3 className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors text-sm leading-snug">
                     {product.name}

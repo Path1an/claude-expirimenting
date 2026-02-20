@@ -13,6 +13,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
           <div className="flex items-center gap-6">
             <Link href="/blog" className="text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors">Blog</Link>
             <Link href="/products" className="text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors">Products</Link>
+            <Link href="/admin" className="text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors">Login</Link>
             <ThemeToggle />
           </div>
         </nav>

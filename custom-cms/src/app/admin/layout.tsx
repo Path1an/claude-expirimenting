@@ -28,6 +28,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
         {/* Footer */}
         <div className="p-4 border-t border-zinc-800">
+          <a
+            href="/"
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors mb-1"
+          >
+            <span>View site</span>
+            <span className="text-xs">↗</span>
+          </a>
           <div className="flex items-center gap-3 px-2 mb-3">
             <div className="w-7 h-7 rounded-full bg-zinc-700 flex items-center justify-center text-xs font-medium text-zinc-300 shrink-0">
               {session.email[0].toUpperCase()}
