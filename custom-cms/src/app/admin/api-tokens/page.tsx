@@ -17,8 +17,8 @@ export default async function ApiTokensPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-zinc-100">API Tokens</h1>
-        <p className="text-zinc-500 text-sm mt-1">Manage Bearer tokens for headless API access</p>
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-zinc-100">API Tokens</h1>
+        <p className="text-gray-400 dark:text-zinc-500 text-sm mt-1">Manage Bearer tokens for headless API access</p>
       </div>
       <TokensClient tokens={tokens} />
     </div>

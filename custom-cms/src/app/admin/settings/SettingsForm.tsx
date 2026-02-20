@@ -3,8 +3,8 @@ import { useState } from 'react';
 import type { SiteSettings } from '@/db/schema';
 import { API } from '@/lib/api-paths';
 
-const inputCls = 'w-full bg-zinc-800 border border-zinc-700 text-zinc-100 placeholder:text-zinc-500 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500';
-const labelCls = 'block text-sm font-medium text-zinc-300 mb-1.5';
+const inputCls = 'w-full bg-gray-100 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 text-gray-900 dark:text-gray-900 dark:text-zinc-100 placeholder:text-gray-400 dark:placeholder:text-gray-400 dark:text-zinc-500 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500';
+const labelCls = 'block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1.5';
 
 interface Props {
   settings: Partial<SiteSettings>;
@@ -59,8 +59,8 @@ export default function SettingsForm({ settings }: Props) {
       )}
 
       {/* General */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 space-y-4">
-        <h2 className="text-sm font-semibold text-zinc-100 mb-4">General</h2>
+      <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-5 space-y-4">
+        <h2 className="text-sm font-semibold text-gray-900 dark:text-zinc-100 mb-4">General</h2>
         <div>
           <label className={labelCls}>Site Name *</label>
           <input value={siteName} onChange={e => setSiteName(e.target.value)} required className={inputCls} placeholder="My Awesome Site" />
@@ -77,8 +77,8 @@ export default function SettingsForm({ settings }: Props) {
       </div>
 
       {/* Social Links */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 space-y-4">
-        <h2 className="text-sm font-semibold text-zinc-100 mb-4">Social Links</h2>
+      <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-5 space-y-4">
+        <h2 className="text-sm font-semibold text-gray-900 dark:text-zinc-100 mb-4">Social Links</h2>
         <div>
           <label className={labelCls}>Twitter / X</label>
           <input value={twitter} onChange={e => setTwitter(e.target.value)} className={inputCls} placeholder="https://twitter.com/yourhandle" />
@@ -94,9 +94,9 @@ export default function SettingsForm({ settings }: Props) {
       </div>
 
       {/* CORS */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-        <h2 className="text-sm font-semibold text-zinc-100 mb-1">CORS Allowed Origins</h2>
-        <p className="text-xs text-zinc-500 mb-4">Enter one origin per line. These origins can call your API from a browser (e.g. your frontend app).</p>
+      <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-5">
+        <h2 className="text-sm font-semibold text-gray-900 dark:text-zinc-100 mb-1">CORS Allowed Origins</h2>
+        <p className="text-xs text-gray-400 dark:text-zinc-500 mb-4">Enter one origin per line. These origins can call your API from a browser (e.g. your frontend app).</p>
         <textarea
           value={corsOrigins}
           onChange={e => setCorsOrigins(e.target.value)}
@@ -104,7 +104,7 @@ export default function SettingsForm({ settings }: Props) {
           className={inputCls + ' font-mono'}
           placeholder={'https://myapp.com\nhttps://staging.myapp.com'}
         />
-        <p className="text-xs text-zinc-600 mt-2">Changes take effect within 60 seconds.</p>
+        <p className="text-xs text-gray-400 dark:text-zinc-600 mt-2">Changes take effect within 60 seconds.</p>
       </div>
 
       <div className="flex justify-end">

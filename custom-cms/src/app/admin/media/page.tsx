@@ -10,8 +10,8 @@ export default async function MediaPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-zinc-100">Media</h1>
-        <p className="text-zinc-500 text-sm mt-1">{files.length} file{files.length !== 1 ? 's' : ''}</p>
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-zinc-100">Media</h1>
+        <p className="text-gray-400 dark:text-zinc-500 text-sm mt-1">{files.length} file{files.length !== 1 ? 's' : ''}</p>
       </div>
 
       <MediaUploader />

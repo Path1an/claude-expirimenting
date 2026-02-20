@@ -33,21 +33,21 @@ export default function MediaGrid({ files }: { files: MediaFile[] }) {
   }
 
   if (files.length === 0) {
-    return <p className="col-span-full text-center text-zinc-600 py-12">No files uploaded yet</p>;
+    return <p className="col-span-full text-center text-gray-400 dark:text-zinc-600 py-12">No files uploaded yet</p>;
   }
 
   return (
     <>
       {error && (
-        <p className="col-span-full text-red-400 text-sm mb-2">{error}</p>
+        <p className="col-span-full text-red-500 dark:text-red-400 text-sm mb-2">{error}</p>
       )}
       {files.map((file) => (
-        <div key={file.id} className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden hover:border-zinc-700 transition-colors group relative">
+        <div key={file.id} className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden hover:border-gray-300 dark:hover:border-zinc-700 transition-colors group relative">
           {file.mimeType.startsWith('image/') ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={file.url} alt={file.alt ?? file.filename} className="w-full h-32 object-cover" />
           ) : (
-            <div className="w-full h-32 bg-zinc-800 flex items-center justify-center text-zinc-500 text-xs font-mono">
+            <div className="w-full h-32 bg-gray-100 dark:bg-zinc-800 flex items-center justify-center text-gray-400 dark:text-zinc-500 text-xs font-mono">
               {file.mimeType.split('/')[1]}
             </div>
           )}
@@ -60,10 +60,10 @@ export default function MediaGrid({ files }: { files: MediaFile[] }) {
             ×
           </button>
           <div className="p-3">
-            <p className="text-xs text-zinc-300 truncate font-medium" title={file.filename}>{file.filename}</p>
-            <p className="text-xs text-zinc-600 mt-0.5">{(file.size / 1024).toFixed(1)} KB</p>
+            <p className="text-xs text-gray-700 dark:text-zinc-300 truncate font-medium" title={file.filename}>{file.filename}</p>
+            <p className="text-xs text-gray-400 dark:text-zinc-600 mt-0.5">{(file.size / 1024).toFixed(1)} KB</p>
             <a href={file.url} target="_blank" rel="noreferrer"
-              className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors">View ↗</a>
+              className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors">View ↗</a>
           </div>
         </div>
       ))}

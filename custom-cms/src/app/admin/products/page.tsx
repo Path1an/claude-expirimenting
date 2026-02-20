@@ -11,8 +11,8 @@ export default async function ProductsListPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-semibold text-zinc-100">Products</h1>
-          <p className="text-zinc-500 text-sm mt-1">{allProducts.length} product{allProducts.length !== 1 ? 's' : ''}</p>
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-zinc-100">Products</h1>
+          <p className="text-gray-400 dark:text-zinc-500 text-sm mt-1">{allProducts.length} product{allProducts.length !== 1 ? 's' : ''}</p>
         </div>
         <Link href="/admin/products/new" className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
           + New Product

@@ -3,8 +3,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { API } from '@/lib/api-paths';
 
-export const inputCls = 'w-full bg-zinc-800 border border-zinc-700 text-zinc-100 placeholder:text-zinc-500 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500';
-export const labelCls = 'block text-sm font-medium text-zinc-300 mb-1.5';
+export const inputCls = 'w-full bg-gray-100 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 text-gray-900 dark:text-zinc-100 placeholder:text-gray-400 dark:placeholder:text-zinc-500 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500';
+export const labelCls = 'block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1.5';
 
 type SetExtra = (key: string, value: string) => void;
 
@@ -160,13 +160,13 @@ export default function ContentForm({ id, config }: { id?: string; config: FormC
     <div className="max-w-3xl">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-semibold text-zinc-100">{isNew ? `New ${config.label}` : `Edit ${config.label}`}</h1>
-          {saved && <p className="text-emerald-400 text-sm mt-1">Saved ✓</p>}
-          {error && <p className="text-red-400 text-sm mt-1">{error}</p>}
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-zinc-100">{isNew ? `New ${config.label}` : `Edit ${config.label}`}</h1>
+          {saved && <p className="text-emerald-600 dark:text-emerald-400 text-sm mt-1">Saved ✓</p>}
+          {error && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{error}</p>}
         </div>
         <div className="flex items-center gap-3">
-          {!isNew && <button onClick={handleDelete} className="text-red-400 hover:text-red-300 text-sm transition-colors">Delete</button>}
-          <button onClick={() => router.push(config.listPath)} className="border border-zinc-700 text-zinc-300 hover:bg-zinc-800 px-4 py-2 rounded-lg text-sm transition-colors">Cancel</button>
+          {!isNew && <button onClick={handleDelete} className="text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 text-sm transition-colors">Delete</button>}
+          <button onClick={() => router.push(config.listPath)} className="border border-gray-300 dark:border-zinc-700 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800 px-4 py-2 rounded-lg text-sm transition-colors">Cancel</button>
           <button form={config.formId} type="submit" disabled={loading} className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-40">
             {loading ? 'Saving…' : 'Save'}
           </button>
@@ -175,7 +175,7 @@ export default function ContentForm({ id, config }: { id?: string; config: FormC
 
       <form id={config.formId} onSubmit={handleSubmit} className="space-y-5">
         {/* Core fields */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 space-y-4">
+        <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-5 space-y-4">
           <div>
             <label className={labelCls}>{config.primaryField.label} *</label>
             <input value={primaryValue} onChange={e => handlePrimaryChange(e.target.value)} required className={inputCls} placeholder={config.primaryField.placeholder} />
@@ -188,11 +188,11 @@ export default function ContentForm({ id, config }: { id?: string; config: FormC
         </div>
 
         {/* Content */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+        <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-5">
           <div className="flex items-center justify-between mb-3">
             <label className={labelCls + ' mb-0'}>{config.contentField.label}</label>
             <button type="button" onClick={generateWithClaude} disabled={aiLoading || !primaryValue}
-              className="text-violet-400 hover:text-violet-300 text-xs transition-colors disabled:opacity-40">
+              className="text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300 text-xs transition-colors disabled:opacity-40">
               {aiLoading ? 'Generating…' : '✦ Generate with Claude'}
             </button>
           </div>
@@ -201,11 +201,11 @@ export default function ContentForm({ id, config }: { id?: string; config: FormC
         </div>
 
         {/* SEO */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+        <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium text-zinc-300">SEO</h3>
+            <h3 className="text-sm font-medium text-gray-700 dark:text-zinc-300">SEO</h3>
             <button type="button" onClick={generateSEO} disabled={seoLoading || !contentValue}
-              className="text-violet-400 hover:text-violet-300 text-xs transition-colors disabled:opacity-40">
+              className="text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300 text-xs transition-colors disabled:opacity-40">
               {seoLoading ? 'Generating…' : '✦ Generate SEO'}
             </button>
           </div>
@@ -226,13 +226,13 @@ export default function ContentForm({ id, config }: { id?: string; config: FormC
         </div>
 
         {/* Published */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+        <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-5">
           <label className="flex items-center gap-3 cursor-pointer">
             <input type="checkbox" checked={published} onChange={e => setPublished(e.target.checked)}
               className="w-4 h-4 rounded accent-indigo-600" />
             <div>
-              <span className="text-sm font-medium text-zinc-300">Published</span>
-              <p className="text-xs text-zinc-500 mt-0.5">{config.publishedHelp}</p>
+              <span className="text-sm font-medium text-gray-700 dark:text-zinc-300">Published</span>
+              <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">{config.publishedHelp}</p>
             </div>
           </label>
         </div>

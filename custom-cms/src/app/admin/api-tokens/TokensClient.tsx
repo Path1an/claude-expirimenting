@@ -72,7 +72,7 @@ export default function TokensClient({ tokens }: Props) {
             <button onClick={() => setNewToken(null)} className="text-amber-400/50 hover:text-amber-400 text-lg leading-none">×</button>
           </div>
           <div className="flex items-center gap-2 mt-3">
-            <code className="flex-1 bg-zinc-950 text-amber-300 rounded-lg px-3 py-2 text-sm font-mono break-all">
+            <code className="flex-1 bg-gray-900 dark:bg-zinc-950 text-amber-300 rounded-lg px-3 py-2 text-sm font-mono break-all">
               {newToken.fullToken}
             </code>
             <button onClick={copyToken} className="shrink-0 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 px-3 py-2 rounded-lg text-sm transition-colors">
@@ -91,9 +91,9 @@ export default function TokensClient({ tokens }: Props) {
       )}
 
       {/* Create form */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+      <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-5">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold text-zinc-100">API Tokens</h2>
+          <h2 className="text-sm font-semibold text-gray-900 dark:text-zinc-100">API Tokens</h2>
           <button onClick={() => setShowForm(!showForm)}
             className="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors">
             + Create Token
@@ -101,13 +101,13 @@ export default function TokensClient({ tokens }: Props) {
         </div>
 
         {showForm && (
-          <form onSubmit={handleCreate} className="flex gap-3 mb-4 pb-4 border-b border-zinc-800">
+          <form onSubmit={handleCreate} className="flex gap-3 mb-4 pb-4 border-b border-gray-200 dark:border-zinc-800">
             <input
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder="Token name (e.g. My Frontend App)"
               required
-              className="flex-1 bg-zinc-800 border border-zinc-700 text-zinc-100 placeholder:text-zinc-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="flex-1 bg-gray-100 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 text-gray-900 dark:text-zinc-100 placeholder:text-gray-400 dark:placeholder:text-zinc-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
             <button type="submit" disabled={creating}
               className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-40">
@@ -118,40 +118,40 @@ export default function TokensClient({ tokens }: Props) {
 
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-zinc-800">
-              <th className="text-left pb-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider">Name</th>
-              <th className="text-left pb-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider">Token</th>
-              <th className="text-left pb-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider">Created</th>
-              <th className="text-left pb-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider">Last used</th>
+            <tr className="border-b border-gray-200 dark:border-zinc-800">
+              <th className="text-left pb-3 text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">Name</th>
+              <th className="text-left pb-3 text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">Token</th>
+              <th className="text-left pb-3 text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">Created</th>
+              <th className="text-left pb-3 text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">Last used</th>
               <th className="pb-3"></th>
             </tr>
           </thead>
           <tbody>
             {tokens.map(t => (
-              <tr key={t.id} className="border-b border-zinc-800 last:border-0">
-                <td className="py-3 font-medium text-zinc-100">{t.name}</td>
-                <td className="py-3 font-mono text-xs text-zinc-500">{t.tokenMasked}</td>
-                <td className="py-3 text-zinc-500">{t.createdAt.slice(0, 10)}</td>
-                <td className="py-3 text-zinc-500">{t.lastUsedAt ? t.lastUsedAt.slice(0, 10) : <span className="text-zinc-700">Never</span>}</td>
+              <tr key={t.id} className="border-b border-gray-200 dark:border-zinc-800 last:border-0">
+                <td className="py-3 font-medium text-gray-900 dark:text-zinc-100">{t.name}</td>
+                <td className="py-3 font-mono text-xs text-gray-400 dark:text-zinc-500">{t.tokenMasked}</td>
+                <td className="py-3 text-gray-400 dark:text-zinc-500">{t.createdAt.slice(0, 10)}</td>
+                <td className="py-3 text-gray-400 dark:text-zinc-500">{t.lastUsedAt ? t.lastUsedAt.slice(0, 10) : <span className="text-gray-300 dark:text-zinc-700">Never</span>}</td>
                 <td className="py-3 text-right">
-                  <button onClick={() => handleDelete(t.id, t.name)} className="text-red-400 hover:text-red-300 text-sm transition-colors">Revoke</button>
+                  <button onClick={() => handleDelete(t.id, t.name)} className="text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 text-sm transition-colors">Revoke</button>
                 </td>
               </tr>
             ))}
             {tokens.length === 0 && !showForm && (
-              <tr><td colSpan={5} className="py-10 text-center text-zinc-600 text-sm">No tokens yet. Create one to start using the headless API.</td></tr>
+              <tr><td colSpan={5} className="py-10 text-center text-gray-400 dark:text-zinc-600 text-sm">No tokens yet. Create one to start using the headless API.</td></tr>
             )}
           </tbody>
         </table>
       </div>
 
       {/* Usage instructions */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-        <h2 className="text-sm font-semibold text-zinc-100 mb-3">How to use</h2>
-        <p className="text-sm text-zinc-400 mb-3">Include the token as a Bearer header on any API request:</p>
-        <pre className="bg-zinc-950 rounded-lg p-4 text-xs font-mono text-zinc-300 overflow-x-auto">{`curl https://your-cms.com/api/pages \\
+      <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-5">
+        <h2 className="text-sm font-semibold text-gray-900 dark:text-zinc-100 mb-3">How to use</h2>
+        <p className="text-sm text-gray-500 dark:text-zinc-400 mb-3">Include the token as a Bearer header on any API request:</p>
+        <pre className="bg-gray-900 dark:bg-zinc-950 rounded-lg p-4 text-xs font-mono text-gray-300 dark:text-zinc-300 overflow-x-auto">{`curl https://your-cms.com/api/pages \\
   -H "Authorization: Bearer cms_your_token_here"`}</pre>
-        <p className="text-xs text-zinc-600 mt-3">Public GET endpoints (pages, posts, products, media, settings) work without a token.</p>
+        <p className="text-xs text-gray-400 dark:text-zinc-600 mt-3">Public GET endpoints (pages, posts, products, media, settings) work without a token.</p>
       </div>
     </div>
   );

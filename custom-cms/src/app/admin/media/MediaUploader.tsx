@@ -40,8 +40,8 @@ export default function MediaUploader() {
       onClick={() => inputRef.current?.click()}
       className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all ${
         dragOver
-          ? 'border-indigo-500 bg-indigo-500/10 text-indigo-400'
-          : 'border-zinc-700 hover:border-zinc-500 bg-zinc-900 text-zinc-500'
+          ? 'border-indigo-500 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400'
+          : 'border-gray-300 hover:border-gray-400 bg-white dark:border-zinc-700 dark:hover:border-zinc-500 dark:bg-zinc-900 text-gray-400 dark:text-zinc-500'
       }`}
     >
       <input ref={inputRef} type="file" multiple className="hidden" onChange={e => handleFiles(e.target.files)} />
@@ -53,7 +53,7 @@ export default function MediaUploader() {
       ) : (
         <>
           <p className="text-sm font-medium">Drag & drop files here</p>
-          <p className="text-xs mt-1 text-zinc-600">or click to select files</p>
+          <p className="text-xs mt-1 text-gray-400 dark:text-zinc-600">or click to select files</p>
         </>
       )}
     </div>

@@ -81,29 +81,29 @@ export default function ProductImageManager({ productId }: { productId: number }
   const imageMedia = mediaList.filter(m => m.mimeType.startsWith('image/'));
 
   return (
-    <div className="mt-6 border border-zinc-800 rounded-lg p-4">
+    <div className="mt-6 border border-gray-200 dark:border-zinc-800 rounded-lg p-4">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-medium text-zinc-300">Product Images</h3>
+        <h3 className="text-sm font-medium text-gray-700 dark:text-zinc-300">Product Images</h3>
         <button
           type="button"
           onClick={() => setPickerOpen(true)}
           disabled={loading}
-          className="text-xs px-3 py-1.5 rounded-md bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition-colors disabled:opacity-50"
+          className="text-xs px-3 py-1.5 rounded-md bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors disabled:opacity-50"
         >
           + Add image
         </button>
       </div>
 
       {error && (
-        <p className="text-red-400 text-xs mb-3">{error}</p>
+        <p className="text-red-500 dark:text-red-400 text-xs mb-3">{error}</p>
       )}
 
       {images.length === 0 ? (
-        <p className="text-zinc-600 text-xs py-4 text-center">No images yet</p>
+        <p className="text-gray-400 dark:text-zinc-600 text-xs py-4 text-center">No images yet</p>
       ) : (
         <div className="flex flex-wrap gap-3">
           {images.map(img => (
-            <div key={img.id} className="relative group w-20 h-20 rounded-md overflow-hidden border border-zinc-700 bg-zinc-900 flex-shrink-0">
+            <div key={img.id} className="relative group w-20 h-20 rounded-md overflow-hidden border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-900 flex-shrink-0">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={img.url} alt={img.alt ?? ''} className="w-full h-full object-cover" />
               <button
@@ -122,22 +122,22 @@ export default function ProductImageManager({ productId }: { productId: number }
 
       {pickerOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <div className="bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl w-full max-w-2xl mx-4 max-h-[80vh] flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b border-zinc-800">
-              <h4 className="text-sm font-medium text-zinc-200">Select an image</h4>
+          <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-2xl w-full max-w-2xl mx-4 max-h-[80vh] flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-zinc-800">
+              <h4 className="text-sm font-medium text-gray-800 dark:text-zinc-200">Select an image</h4>
               <button
                 type="button"
                 onClick={() => setPickerOpen(false)}
-                className="text-zinc-500 hover:text-zinc-300 transition-colors text-lg leading-none"
+                className="text-gray-400 hover:text-gray-600 dark:text-zinc-500 dark:hover:text-zinc-300 transition-colors text-lg leading-none"
               >
                 ×
               </button>
             </div>
             <div className="overflow-y-auto p-4">
               {imageMedia.length === 0 ? (
-                <p className="text-zinc-500 text-sm text-center py-8">
+                <p className="text-gray-500 dark:text-zinc-500 text-sm text-center py-8">
                   No images in media library.{' '}
-                  <a href="/admin/media" className="underline hover:text-zinc-300">Upload one first.</a>
+                  <a href="/admin/media" className="underline hover:text-gray-700 dark:hover:text-zinc-300">Upload one first.</a>
                 </p>
               ) : (
                 <div className="grid grid-cols-4 gap-3">
@@ -147,7 +147,7 @@ export default function ProductImageManager({ productId }: { productId: number }
                       type="button"
                       onClick={() => handleAdd(m.id)}
                       disabled={loading}
-                      className="group relative rounded-lg overflow-hidden border border-zinc-700 bg-zinc-800 aspect-square hover:border-indigo-500 transition-colors disabled:opacity-50"
+                      className="group relative rounded-lg overflow-hidden border border-gray-200 dark:border-zinc-700 bg-gray-100 dark:bg-zinc-800 aspect-square hover:border-indigo-500 transition-colors disabled:opacity-50"
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={m.url} alt={m.alt ?? m.filename} className="w-full h-full object-cover" />
