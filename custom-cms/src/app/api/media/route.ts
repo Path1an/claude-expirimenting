@@ -26,6 +26,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'file is required' }, { status: 400 });
   }
   const alt = formData.get('alt') as string | undefined;
-  const record = await saveUpload(file, alt ?? undefined);
-  return NextResponse.json(record, { status: 201 });
+  try {
+    const record = await saveUpload(file, alt ?? undefined);
+    return NextResponse.json(record, { status: 201 });
+  } catch (err) {
+    const e = err as { message?: string; status?: number };
+    return NextResponse.json({ error: e.message ?? 'Upload failed' }, { status: e.status ?? 500 });
+  }
 }

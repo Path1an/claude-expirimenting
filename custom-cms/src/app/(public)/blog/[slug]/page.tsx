@@ -11,7 +11,7 @@ interface Props { params: Promise<{ slug: string }> }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const post = db.select().from(posts).where(eq(posts.slug, slug)).get();
-  if (!post) return {};
+  if (!post) return { title: 'Not Found' };
   return {
     title: post.metaTitle ?? post.title,
     description: post.metaDescription ?? undefined,
@@ -54,7 +54,7 @@ export default async function BlogPostPage({ params }: Props) {
       {post.content && (
         <div
           className="prose prose-gray prose-lg max-w-none prose-headings:font-bold prose-a:text-indigo-600"
-          dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content.replace(/\n/g, '<br/>')) }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content).replace(/\n/g, '<br/>') }}
         />
       )}
     </div>

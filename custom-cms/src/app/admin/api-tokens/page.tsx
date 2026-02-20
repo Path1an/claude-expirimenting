@@ -9,7 +9,7 @@ export default async function ApiTokensPage() {
   const tokens = rows.map(r => ({
     id: r.id,
     name: r.name,
-    tokenMasked: 'cms_' + '•'.repeat(28) + r.token.slice(-4),
+    tokenMasked: 'cms_' + '•'.repeat(28) + (r.tokenHint ?? '????'),
     createdAt: r.createdAt,
     lastUsedAt: r.lastUsedAt,
   }));

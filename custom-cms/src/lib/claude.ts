@@ -27,7 +27,7 @@ export async function generateContent(
   });
 
   const block = message.content[0];
-  if (block.type !== 'text') throw new Error('Unexpected response from Claude');
+  if (!block || block.type !== 'text') throw new Error('Unexpected response from Claude');
   return block.text;
 }
 
@@ -54,9 +54,13 @@ Respond ONLY with valid JSON in exactly this shape:
   });
 
   const block = message.content[0];
-  if (block.type !== 'text') throw new Error('Unexpected response from Claude');
+  if (!block || block.type !== 'text') throw new Error('Unexpected response from Claude');
   const raw = block.text.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim();
-  return JSON.parse(raw);
+  try {
+    return JSON.parse(raw);
+  } catch {
+    throw new Error('Claude returned malformed JSON');
+  }
 }
 
 export async function chat(
@@ -89,6 +93,6 @@ export async function chat(
   });
 
   const block = message.content[0];
-  if (block.type !== 'text') throw new Error('Unexpected response from Claude');
+  if (!block || block.type !== 'text') throw new Error('Unexpected response from Claude');
   return block.text;
 }

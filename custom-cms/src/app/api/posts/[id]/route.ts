@@ -29,6 +29,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
 
 export async function DELETE(_: NextRequest, { params }: Params) {
   const { id } = await params;
-  await db.delete(posts).where(eq(posts.id, Number(id)));
+  const [deleted] = await db.delete(posts).where(eq(posts.id, Number(id))).returning();
+  if (!deleted) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   return NextResponse.json({ ok: true });
 }
